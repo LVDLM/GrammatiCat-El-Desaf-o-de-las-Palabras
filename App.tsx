@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameView, GameState, WordClass, Level, WordData, Achievement } from './types';
 import { INITIAL_LEVELS, LITERARY_LEVELS, KONAMI_CODE, INITIAL_ACHIEVEMENTS } from './constants';
@@ -7,7 +6,7 @@ import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
 import { fetchCommunityLevels } from './services/supabaseService';
 
-// Helper para pluralizar correctamente en español
+// Helper for pluralization
 export const getPluralCategory = (cat: WordClass): string => {
   switch (cat) {
     case WordClass.PREPOSICION: return 'Preposiciones';
@@ -63,12 +62,25 @@ const App: React.FC = () => {
   const timerRef = useRef<any>(null);
 
   useEffect(() => {
+    localStorage.setItem('grammaticat_stats', JSON.stringify(gameState.stats));
+  }, [gameState.stats]);
+
+  useEffect(() => {
+    localStorage.setItem('grammaticat_achievements', JSON.stringify(achievements));
+  }, [achievements]);
+
+  useEffect(() => {
     if (view === GameView.LEVEL_SELECT || view === GameView.MENU) {
       const loadCommunity = async () => {
         setIsLoadingCommunity(true);
-        const onlineLevels = await fetchCommunityLevels();
-        setCommunityLevels(onlineLevels);
-        setIsLoadingCommunity(false);
+        try {
+          const onlineLevels = await fetchCommunityLevels();
+          setCommunityLevels(onlineLevels);
+        } catch (e) {
+          console.error("Failed to load community levels", e);
+        } finally {
+          setIsLoadingCommunity(false);
+        }
       };
       loadCommunity();
     }
@@ -95,7 +107,8 @@ const App: React.FC = () => {
       targetCategory: category,
       mode,
       isPlaying: true,
-      isGameOver: false
+      isGameOver: false,
+      score: mode === 'CHALLENGE' ? prev.score : 0, // Keep score in challenge series
     }));
     setFoundWords([]);
     setErrorWords([]);
@@ -105,16 +118,16 @@ const App: React.FC = () => {
     setView(GameView.PLAYING);
   };
 
-  const startRandomChallenge = async () => {
+  const startRandomChallenge = useCallback(async () => {
     const allAvailable = [...levels, ...literaryLevels, ...communityLevels];
     if (allAvailable.length === 0) return;
 
     const randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
     const categories = Array.from(new Set(randomLevel.words.map(w => w.category)));
-    const randomCategory = categories[Math.floor(Math.random() * categories.length)] as WordClass;
+    const randomCategory = (categories[Math.floor(Math.random() * categories.length)] as WordClass) || WordClass.SUSTANTIVO;
     
     startGame(randomLevel, randomCategory, 'CHALLENGE');
-  };
+  }, [levels, literaryLevels, communityLevels]);
 
   const usePowerup = (type: 'hint' | 'clean' | 'shield') => {
     if (!gameState.isPlaying || !currentLevel || !gameState.targetCategory) return;
@@ -159,7 +172,7 @@ const App: React.FC = () => {
       }, 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [gameState.isPlaying]);
+  }, [gameState.isPlaying, gameState.time]);
 
   const handleWordClick = (word: WordData) => {
     if (!gameState.isPlaying || !currentLevel || !gameState.targetCategory) return;
@@ -168,10 +181,20 @@ const App: React.FC = () => {
     if (word.category === gameState.targetCategory) {
       const newFound = [...foundWords, word.id];
       setFoundWords(newFound);
-      setGameState(prev => ({ ...prev, score: prev.score + 10 }));
+      setGameState(prev => ({ 
+        ...prev, 
+        score: prev.score + 10,
+        stats: { ...prev.stats, nounsFound: prev.stats.nounsFound + 1 }
+      }));
+
+      // Check if 100 words achievement
+      if (gameState.stats.nounsFound + 1 >= 100) unlockAchievement('noun_expert');
 
       const targetWordsCount = currentLevel.words.filter(w => w.category === gameState.targetCategory).length;
       if (newFound.length === targetWordsCount) {
+        // Speedster achievement
+        if (gameState.time > (currentLevel.timeLimit || 30) / 2) unlockAchievement('speedster');
+        
         const rewardRoll = Math.random();
         let reward: Reward;
         
@@ -210,6 +233,7 @@ const App: React.FC = () => {
         }, 3000); 
       }
     } else {
+      // Penalty: lose time
       if (gameState.powerups.shields > 0) {
         setGameState(prev => ({ ...prev, powerups: { ...prev.powerups, shields: prev.powerups.shields - 1 } }));
         setErrorWords(prev => [...prev, word.id]);
@@ -229,26 +253,31 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const nextProgress = [...konamiProgress, e.key];
-      const matchLength = nextProgress.length;
-      const expected = KONAMI_CODE.slice(0, matchLength);
-      if (JSON.stringify(nextProgress) === JSON.stringify(expected)) {
-        if (matchLength === KONAMI_CODE.length) {
-          unlockAchievement('hidden_discoverer');
-          setShowKonamiEffect(true);
-          setView(GameView.EDITOR);
-          setKonamiProgress([]);
-        } else { setKonamiProgress(nextProgress); }
-      } else { setKonamiProgress([]); }
+      setKonamiProgress(prev => {
+        const next = [...prev, e.key];
+        const matchLength = next.length;
+        const expected = KONAMI_CODE.slice(0, matchLength);
+        
+        if (JSON.stringify(next) === JSON.stringify(expected)) {
+          if (matchLength === KONAMI_CODE.length) {
+            unlockAchievement('hidden_discoverer');
+            setShowKonamiEffect(true);
+            setView(GameView.EDITOR);
+            return [];
+          }
+          return next;
+        }
+        return [];
+      });
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [konamiProgress]);
+  }, []);
 
   const LevelCard = ({ level }: { level: Level }) => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     return (
-      <div className="bg-white rounded-3xl p-6 shadow-xl border-b-4 border-indigo-100 hover:shadow-2xl transition-all">
+      <div className="bg-white rounded-3xl p-6 shadow-xl border-b-4 border-indigo-100 hover:shadow-2xl transition-all hover:-translate-y-1">
          <h3 className="text-xl font-black text-indigo-900 mb-2 truncate">{level.title}</h3>
          <p className="text-slate-400 text-xs line-clamp-2 mb-4 italic leading-relaxed">"{level.text}"</p>
          <div className="flex flex-wrap gap-2">
@@ -256,7 +285,7 @@ const App: React.FC = () => {
               <button 
                 key={cat} 
                 onClick={() => startGame(level, cat, 'PRACTICE')}
-                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm"
+                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95"
               >
                 {getPluralCategory(cat)}
               </button>
@@ -278,9 +307,12 @@ const App: React.FC = () => {
 
       {view === GameView.MENU && (
         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700">
-          <h1 className="text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter mb-16 select-none">
-            GRAMMA<span className="text-yellow-300">CAT</span>
-          </h1>
+          <div className="relative mb-12 floating">
+            <h1 className="text-7xl md:text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter select-none">
+              GRAMMA<span className="text-yellow-300">CAT</span>
+            </h1>
+            <div className="absolute -top-12 -right-12 text-6xl text-white opacity-20 rotate-12"><i className="fas fa-cat"></i></div>
+          </div>
           
           <div className="flex flex-col md:flex-row gap-10">
             <button 
@@ -308,6 +340,9 @@ const App: React.FC = () => {
             <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-8 py-3 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 transition-all flex items-center">
               <i className="fas fa-trophy mr-3"></i> LOGROS
             </button>
+            <div className="text-white/40 text-xs flex items-center italic">
+              <i className="fas fa-keyboard mr-2"></i> Konami Code para Editor
+            </div>
           </div>
         </div>
       )}
@@ -352,13 +387,13 @@ const App: React.FC = () => {
         <div className="w-full flex flex-col items-center justify-center animate-in zoom-in duration-500">
           <GameHUD state={gameState} target={gameState.targetCategory} />
           
-          <div className="w-full max-w-5xl bg-white rounded-[5rem] p-20 shadow-2xl border-b-8 border-indigo-200 min-h-[450px] flex flex-col justify-center relative">
-            <div className="relative z-10 flex flex-wrap justify-center items-center gap-x-6 gap-y-8 text-5xl font-black text-slate-800 leading-normal">
+          <div className="w-full max-w-5xl bg-white rounded-[5rem] p-8 md:p-20 shadow-2xl border-b-8 border-indigo-200 min-h-[450px] flex flex-col justify-center relative">
+            <div className="relative z-10 flex flex-wrap justify-center items-center gap-x-4 md:gap-x-6 gap-y-6 md:gap-y-8 text-3xl md:text-5xl font-black text-slate-800 leading-normal">
               {currentLevel.words.map((w) => (
                 <span 
                   key={w.id} 
                   onClick={() => handleWordClick(w)} 
-                  className={`cursor-pointer px-6 py-2 rounded-[2rem] transition-all duration-300 transform select-none
+                  className={`cursor-pointer px-4 md:px-6 py-1 md:py-2 rounded-[2rem] transition-all duration-300 transform select-none
                     ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-[0_8px_0_rgb(22,163,74)] -rotate-3 scale-110 pointer-events-none' : ''}
                     ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-3 scale-110 opacity-40 pointer-events-none' : ''}
                     ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''}
@@ -373,18 +408,18 @@ const App: React.FC = () => {
 
             {!gameState.isPlaying && !gameState.isGameOver && lastReward && (
               <div className="absolute inset-0 bg-indigo-900/40 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-in fade-in zoom-in duration-500 rounded-[5rem]">
-                <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-b-[12px] border-green-500 text-center scale-110 transform rotate-[-2deg]">
-                   <h2 className="text-6xl font-black text-indigo-900 mb-6 italic tracking-tighter uppercase">¡NIVEL COMPLETADO!</h2>
+                <div className="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-b-[12px] border-green-500 text-center scale-110 transform rotate-[-2deg]">
+                   <h2 className="text-4xl md:text-6xl font-black text-indigo-900 mb-6 italic tracking-tighter uppercase">¡NIVEL COMPLETADO!</h2>
                    
-                   <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center relative overflow-hidden">
+                   <div className="bg-indigo-50 p-6 md:p-8 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-300 to-transparent opacity-50"></div>
                       <span className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-4">Recompensa Obtenida</span>
                       
-                      <div className={`text-7xl mb-4 animate-bounce ${lastReward.color}`}>
+                      <div className={`text-5xl md:text-7xl mb-4 animate-bounce ${lastReward.color}`}>
                         <i className={`fas ${lastReward.icon}`}></i>
                       </div>
                       
-                      <span className={`text-4xl font-black italic tracking-tight ${lastReward.color}`}>
+                      <span className={`text-2xl md:text-4xl font-black italic tracking-tight ${lastReward.color}`}>
                         {lastReward.label}
                       </span>
                    </div>
@@ -395,46 +430,58 @@ const App: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-12 flex gap-8">
+          <div className="mt-12 flex gap-4 md:gap-8 flex-wrap justify-center">
             <button 
               onClick={() => usePowerup('hint')}
               disabled={gameState.powerups.hints <= 0}
-              className={`group relative w-32 h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95
+              className={`group relative w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95
                 ${gameState.powerups.hints > 0 ? 'bg-cyan-300 border-cyan-500 hover:bg-cyan-200' : 'bg-slate-200 border-slate-300 opacity-50'}
               `}
             >
-              <i className="fas fa-lightbulb text-4xl text-cyan-800 mb-1"></i>
-              <span className="text-xs font-black text-cyan-900 uppercase">PISTA ({gameState.powerups.hints})</span>
+              <i className="fas fa-lightbulb text-3xl md:text-4xl text-cyan-800 mb-1"></i>
+              <span className="text-[10px] md:text-xs font-black text-cyan-900 uppercase">PISTA ({gameState.powerups.hints})</span>
             </button>
 
             <button 
               onClick={() => usePowerup('clean')}
               disabled={gameState.powerups.cleaners <= 0}
-              className={`group relative w-32 h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95
+              className={`group relative w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95
                 ${gameState.powerups.cleaners > 0 ? 'bg-rose-300 border-rose-500 hover:bg-rose-200' : 'bg-slate-200 border-slate-300 opacity-50'}
               `}
             >
-              <i className="fas fa-broom text-4xl text-rose-800 mb-1"></i>
-              <span className="text-xs font-black text-rose-900 uppercase">LIMPIAR ({gameState.powerups.cleaners})</span>
+              <i className="fas fa-broom text-3xl md:text-4xl text-rose-800 mb-1"></i>
+              <span className="text-[10px] md:text-xs font-black text-rose-900 uppercase">LIMPIAR ({gameState.powerups.cleaners})</span>
             </button>
 
-            <div className={`w-32 h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all
+            <div className={`w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all
                 ${gameState.powerups.shields > 0 ? 'bg-lime-300 border-lime-500 ring-4 ring-lime-400/50' : 'bg-slate-200 border-slate-300 opacity-50'}
               `}
             >
-              <i className="fas fa-shield-alt text-4xl text-lime-800 mb-1"></i>
-              <span className="text-xs font-black text-lime-900 uppercase">ESCUDO ({gameState.powerups.shields})</span>
+              <i className="fas fa-shield-alt text-3xl md:text-4xl text-lime-800 mb-1"></i>
+              <span className="text-[10px] md:text-xs font-black text-lime-900 uppercase">ESCUDO ({gameState.powerups.shields})</span>
             </div>
+            
+            <button 
+              onClick={() => setView(GameView.MENU)}
+              className="w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 bg-white border-slate-300 transition-all hover:bg-slate-50 active:scale-95"
+            >
+              <i className="fas fa-home text-3xl md:text-4xl text-indigo-400 mb-1"></i>
+              <span className="text-[10px] md:text-xs font-black text-indigo-900 uppercase">SALIR</span>
+            </button>
           </div>
         </div>
       )}
 
       {view === GameView.GAME_OVER && (
-        <div className="text-center bg-white p-16 rounded-[4rem] shadow-2xl border-x-8 border-b-8 border-rose-500 animate-in zoom-in duration-300">
+        <div className="text-center bg-white p-12 md:p-16 rounded-[4rem] shadow-2xl border-x-8 border-b-8 border-rose-500 animate-in zoom-in duration-300 w-full max-w-md mx-4">
           <i className="fas fa-skull text-8xl text-rose-500 mb-6 block"></i>
-          <h2 className="text-7xl font-black text-slate-900 italic tracking-tighter mb-4">GAME OVER</h2>
-          <p className="text-2xl font-bold text-slate-400 mb-10 italic">¡No te rindas, vuelve a intentarlo!</p>
-          <button onClick={() => setView(GameView.MENU)} className="w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl text-3xl font-black shadow-lg transition-all">MENÚ PRINCIPAL</button>
+          <h2 className="text-6xl md:text-7xl font-black text-slate-900 italic tracking-tighter mb-4">GAME OVER</h2>
+          <div className="mb-8">
+            <span className="block text-sm font-bold text-slate-400 uppercase tracking-widest">Puntuación Final</span>
+            <span className="text-5xl font-black text-indigo-600">{gameState.score}</span>
+          </div>
+          <p className="text-xl font-bold text-slate-400 mb-10 italic">¡No te rindas, vuelve a intentarlo!</p>
+          <button onClick={() => setView(GameView.MENU)} className="w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl text-3xl font-black shadow-lg transition-all active:scale-95">MENÚ PRINCIPAL</button>
         </div>
       )}
 
