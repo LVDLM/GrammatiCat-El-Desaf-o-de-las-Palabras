@@ -10,6 +10,8 @@ export enum WordClass {
   DETERMINANTE = 'Determinante'
 }
 
+export type LevelGroup = 'Entrenamiento' | 'Literatura en español' | 'Literatura universal' | 'Tus Niveles';
+
 export interface WordData {
   text: string;
   category: WordClass;
@@ -23,6 +25,7 @@ export interface Level {
   words: WordData[];
   timeLimit: number;
   targetCategory?: WordClass;
+  categoryGroup?: LevelGroup;
 }
 
 export interface Achievement {

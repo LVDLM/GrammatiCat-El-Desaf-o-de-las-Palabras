@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameView, GameState, WordClass, Level, WordData, Achievement, LeaderboardEntry } from './types';
-import { INITIAL_LEVELS, LITERARY_LEVELS, KONAMI_CODE, INITIAL_ACHIEVEMENTS } from './constants';
+import { GameView, GameState, WordClass, Level, WordData, Achievement, LeaderboardEntry, LevelGroup } from './types';
+import { INITIAL_LEVELS, LITERARY_ES_LEVELS, LITERARY_UNIVERSAL_LEVELS, KONAMI_CODE, INITIAL_ACHIEVEMENTS } from './constants';
 import { GameHUD } from './components/GameHUD';
 import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
@@ -24,7 +24,6 @@ interface Reward {
   color: string;
 }
 
-// Componente de Consola de Debug
 const DebugConsole: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [logs, setLogs] = useState<string[]>([...debugLogs]);
 
@@ -54,6 +53,8 @@ const DebugConsole: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 const App: React.FC = () => {
   const [view, setView] = useState<GameView>(GameView.MENU);
   const [showDebug, setShowDebug] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<LevelGroup | null>(null);
+  
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedStats = localStorage.getItem('grammaticat_stats');
     const stats = savedStats ? JSON.parse(savedStats) : { nounsFound: 0, levelsCompleted: 0 };
@@ -74,8 +75,6 @@ const App: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
   const [isSavingScore, setIsSavingScore] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
-  const [levels, setLevels] = useState<Level[]>(INITIAL_LEVELS);
-  const [literaryLevels] = useState<Level[]>(LITERARY_LEVELS);
   const [communityLevels, setCommunityLevels] = useState<Level[]>([]);
   const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
   const [currentLevel, setCurrentLevel] = useState<Level | null>(null);
@@ -94,7 +93,6 @@ const App: React.FC = () => {
   const [lastUnlocked, setLastUnlocked] = useState<Achievement | null>(null);
   const timerRef = useRef<any>(null);
 
-  // Sincronizar clase konami-active con el body para que el Editor lo detecte
   useEffect(() => {
     if (showKonamiEffect) {
       document.body.classList.add('konami-active');
@@ -124,7 +122,6 @@ const App: React.FC = () => {
       const loadCommunity = async () => {
         setIsLoadingCommunity(true);
         try {
-          // Ahora fetchCommunityLevels carga de LocalStorage
           const localUserLevels = await fetchCommunityLevels();
           setCommunityLevels(localUserLevels);
         } catch (e) {
@@ -172,7 +169,7 @@ const App: React.FC = () => {
   };
 
   const startRandomChallenge = useCallback(async (isTransition: boolean = false) => {
-    const allAvailable = [...levels, ...literaryLevels, ...communityLevels];
+    const allAvailable = [...INITIAL_LEVELS, ...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS, ...communityLevels];
     if (allAvailable.length === 0) return;
 
     const randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
@@ -180,12 +177,11 @@ const App: React.FC = () => {
     const randomCategory = (categories[Math.floor(Math.random() * categories.length)] as WordClass) || WordClass.SUSTANTIVO;
     
     startGame(randomLevel, randomCategory, 'CHALLENGE', !isTransition);
-  }, [levels, literaryLevels, communityLevels]);
+  }, [communityLevels]);
 
   const handleSaveScore = async () => {
     if (!playerName.trim()) return;
     setIsSavingScore(true);
-    // Ahora saveScore guarda en LocalStorage
     await saveScore({ name: playerName, score: gameState.score });
     setIsSavingScore(false);
     setScoreSaved(true);
@@ -317,15 +313,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar si se está escribiendo en un input o textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       const key = e.key;
-      
       setKonamiProgress(prev => {
         const next = [...prev, key];
         const matchLength = next.length;
-        
         const expected = KONAMI_CODE.slice(0, matchLength);
         const isMatch = next.every((k, idx) => {
            const targetKey = expected[idx];
@@ -353,20 +346,69 @@ const App: React.FC = () => {
   const LevelCard = ({ level }: { level: Level }) => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     return (
-      <div className={`rounded-3xl p-6 shadow-xl border-b-4 transition-all hover:-translate-y-1 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-100'}`}>
-         <h3 className={`text-xl font-black mb-2 truncate ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
-         <p className="text-slate-400 text-xs line-clamp-2 mb-4 italic leading-relaxed">"{level.text}"</p>
-         <div className="flex flex-wrap gap-2">
+      <div className={`rounded-2xl p-4 shadow-md border-b-2 transition-all hover:bg-indigo-50/50 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-50'}`}>
+         <h3 className={`text-md font-black mb-2 truncate ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
+         <div className="flex flex-wrap gap-1.5">
             {cats.map(cat => (
               <button 
                 key={cat} 
                 onClick={() => startGame(level, cat, 'PRACTICE', true)}
-                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 ${showKonamiEffect ? 'bg-slate-700 hover:bg-indigo-600 text-indigo-300 hover:text-white' : 'bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600'}`}
+                className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all shadow-sm active:scale-95 ${showKonamiEffect ? 'bg-slate-700 hover:bg-indigo-600 text-indigo-300 hover:text-white' : 'bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600'}`}
               >
                 {getPluralCategory(cat)}
               </button>
             ))}
          </div>
+      </div>
+    );
+  };
+
+  const AccordionSection = ({ 
+    id, 
+    title, 
+    icon, 
+    levels, 
+    color 
+  }: { 
+    id: LevelGroup, 
+    title: string, 
+    icon: string, 
+    levels: Level[], 
+    color: string 
+  }) => {
+    const isExpanded = expandedCategory === id;
+    
+    return (
+      <div className={`w-full rounded-3xl overflow-hidden transition-all duration-300 border-4 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
+        <button 
+          onClick={() => setExpandedCategory(isExpanded ? null : id)}
+          className={`w-full flex items-center justify-between p-6 md:p-8 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}
+        >
+          <div className="flex items-center gap-6">
+            <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-5xl shadow-lg transition-transform ${isExpanded ? 'scale-110' : ''} ${color} text-white`}>
+              <i className={`fas ${icon}`}></i>
+            </div>
+            <div>
+              <h3 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
+              <p className={`text-xs md:text-sm font-bold opacity-70 mt-1 ${isExpanded ? 'opacity-50' : ''}`}>
+                {levels.length} textos disponibles
+              </p>
+            </div>
+          </div>
+          <i className={`fas fa-chevron-down text-2xl md:text-4xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
+        </button>
+
+        {isExpanded && (
+          <div className="p-6 pt-0 animate-in slide-in-from-top duration-300">
+            {levels.length === 0 ? (
+               <div className="text-center py-10 opacity-40 italic font-bold">No hay textos en esta categoría aún.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {levels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -431,44 +473,43 @@ const App: React.FC = () => {
       )}
 
       {view === GameView.LEVEL_SELECT && (
-        <div className="w-full max-w-6xl flex flex-col items-center animate-in slide-in-from-right duration-500 overflow-y-auto max-h-[95vh] custom-scrollbar p-2 md:p-6">
-          <div className="w-full flex justify-between items-center mb-6 md:mb-10 sticky top-0 bg-transparent z-10 backdrop-blur-sm py-2 md:py-4 px-4">
+        <div className="w-full max-w-5xl flex flex-col items-center animate-in slide-in-from-bottom duration-500 overflow-y-auto max-h-[95vh] custom-scrollbar p-4 md:p-6">
+          <div className="w-full flex justify-between items-center mb-8 md:mb-12 sticky top-0 bg-transparent z-10 backdrop-blur-sm py-2">
             <button onClick={() => setView(GameView.MENU)} className="p-3 bg-white/20 text-white rounded-full hover:bg-white/40 transition-all shadow-lg"><i className="fas fa-arrow-left text-xl md:text-2xl"></i></button>
-            <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter drop-shadow-md">PRÁCTICA</h2>
+            <h2 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter drop-shadow-md text-center">ELÍGE TU DESAFÍO</h2>
             <div className="w-10"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
-            <div className="space-y-6 lg:col-span-1">
-               <h3 className={`text-xl md:text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md px-4 ${showKonamiEffect ? 'text-cyan-400' : 'text-yellow-300'}`}>
-                 <i className="fas fa-graduation-cap mr-3"></i> Entrenamiento
-               </h3>
-               <div className="px-4 space-y-4">
-                 {levels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
-               </div>
-               
-               <h3 className={`text-xl md:text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md pt-8 px-4 ${showKonamiEffect ? 'text-purple-400' : 'text-cyan-300'}`}>
-                 <i className="fas fa-user-edit mr-3"></i> Tus Niveles
-               </h3>
-               <div className="px-4 space-y-4 pb-8">
-                 {isLoadingCommunity ? <div className="text-white text-center py-10 animate-pulse"><i className="fas fa-spinner fa-spin text-4xl mb-2 block"></i> Cargando...</div> : (
-                   communityLevels.length > 0 ? communityLevels.map(lvl => <LevelCard key={lvl.id} level={lvl} />) : 
-                   <div className="text-white/40 italic text-center py-8 bg-black/10 rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center">
-                      <p className="mb-2">Aún no has creado niveles.</p>
-                      <p className="text-[10px] uppercase font-bold">Usa el editor secreto para añadir los tuyos.</p>
-                   </div>
-                 )}
-               </div>
-            </div>
-
-            <div className="space-y-6 lg:col-span-2">
-               <h3 className={`text-xl md:text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md px-4 ${showKonamiEffect ? 'text-rose-400' : 'text-white'}`}>
-                 <i className="fas fa-feather-alt mr-3"></i> Literatura Clásica
-               </h3>
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 px-4 pb-8">
-                {literaryLevels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
-               </div>
-            </div>
+          <div className="flex flex-col gap-6 w-full pb-10">
+            <AccordionSection 
+              id="Entrenamiento" 
+              title="Entrenamiento" 
+              icon="fa-graduation-cap" 
+              color="bg-emerald-500" 
+              levels={INITIAL_LEVELS} 
+            />
+            <AccordionSection 
+              id="Literatura en español" 
+              title="Literatura en español" 
+              icon="fa-feather-alt" 
+              color="bg-amber-500" 
+              levels={LITERARY_ES_LEVELS} 
+            />
+            <AccordionSection 
+              id="Literatura universal" 
+              title="Literatura universal" 
+              icon="fa-globe-americas" 
+              color="bg-indigo-500" 
+              levels={LITERARY_UNIVERSAL_LEVELS} 
+            />
+            
+            <AccordionSection 
+              id="Tus Niveles" 
+              title="Tus Niveles" 
+              icon="fa-user-edit" 
+              color="bg-purple-500" 
+              levels={communityLevels} 
+            />
           </div>
         </div>
       )}
