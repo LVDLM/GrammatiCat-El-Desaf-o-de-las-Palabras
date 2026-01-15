@@ -10,22 +10,29 @@ const logToDebug = (msg: string, isError: boolean = false) => {
   window.dispatchEvent(new CustomEvent('grammaticat-debug-update'));
 };
 
+const getApiKey = (): string => {
+  return process.env.NEXT_PUBLIC_API_KEY || 
+         process.env.API_KEY || 
+         (import.meta as any).env?.VITE_API_KEY ||
+         (import.meta as any).env?.NEXT_PUBLIC_API_KEY ||
+         '';
+};
+
 export const analyzeTextWithAI = async (text: string) => {
-  // Acceso directo para que el compilador lo detecte
-  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
+  const apiKey = getApiKey();
   
   if (!apiKey) {
-    logToDebug("No se detectó la clave API_KEY. Revisa Vercel.", true);
+    logToDebug("No se encontró NEXT_PUBLIC_API_KEY en el entorno.", true);
     throw new Error("Falta API_KEY");
   }
 
   const ai = new GoogleGenAI({ apiKey });
   
   try {
-    logToDebug("Llamando a Gemini para análisis...");
+    logToDebug("Enviando texto a Gemini...");
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Clasifica gramaticalmente CADA palabra de este texto: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante. 
+      contents: `Analiza gramaticalmente CADA palabra del texto: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante. 
       Devuelve solo un JSON array de objetos {"text": "palabra", "category": "Clase"}.
       Texto: "${text}"`,
       config: {
@@ -48,12 +55,12 @@ export const analyzeTextWithAI = async (text: string) => {
     });
 
     const textOutput = response.text;
-    if (!textOutput) throw new Error("Sin respuesta del modelo");
+    if (!textOutput) throw new Error("Respuesta de IA vacía.");
     
-    logToDebug("Análisis completado.");
+    logToDebug("Análisis de IA recibido.");
     return JSON.parse(textOutput);
   } catch (e: any) {
-    logToDebug(`Fallo en IA: ${e.message}`, true);
+    logToDebug(`Error IA: ${e.message}`, true);
     throw e;
   }
 };
