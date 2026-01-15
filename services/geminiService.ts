@@ -7,11 +7,14 @@ export const analyzeTextWithAI = async (text: string) => {
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Analiza el siguiente texto en español y clasifica cada palabra según su clase gramatical (Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante). 
+    contents: `Actúa como un experto en lingüística española. Analiza el texto proporcionado y clasifica CADA palabra en una de estas categorías: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante.
     
-    IMPORTANTE: Mantén los signos de puntuación (puntos, comas, etc.) pegados a la palabra que los precede, tal como aparecen en el texto original. No omitas ninguna palabra del texto.
+    REGLAS ESTRICTAS:
+    1. No omitas ninguna palabra.
+    2. Si una palabra tiene un signo de puntuación pegado (ej: "casa."), inclúyelo en el campo 'text'.
+    3. Devuelve EXCLUSIVAMENTE un array JSON de objetos con el formato: {"text": "palabra", "category": "Categoría"}.
     
-    Texto: "${text}"`,
+    Texto a analizar: "${text}"`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -19,13 +22,10 @@ export const analyzeTextWithAI = async (text: string) => {
         items: {
           type: Type.OBJECT,
           properties: {
-            text: { 
-              type: Type.STRING,
-              description: "La palabra junto con cualquier signo de puntuación adyacente (ej: 'casa,' o 'final.')"
-            },
+            text: { type: Type.STRING },
             category: { 
               type: Type.STRING,
-              description: "Una de: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante"
+              enum: ["Sustantivo", "Adjetivo", "Verbo", "Adverbio", "Pronombre", "Preposición", "Conjunción", "Determinante"]
             }
           },
           required: ["text", "category"]
@@ -35,10 +35,12 @@ export const analyzeTextWithAI = async (text: string) => {
   });
 
   try {
-    const data = JSON.parse(response.text);
-    return data;
+    const textOutput = response.text;
+    if (!textOutput) return [];
+    return JSON.parse(textOutput);
   } catch (e) {
     console.error("Error parsing Gemini response", e);
+    // Fallback simple por si falla el JSON
     return [];
   }
 };
