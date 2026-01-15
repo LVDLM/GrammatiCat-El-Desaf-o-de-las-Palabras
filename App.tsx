@@ -35,12 +35,14 @@ const DebugConsole: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }, []);
 
   return (
-    <div className="fixed bottom-20 right-4 z-[200] w-80 max-h-96 bg-black/90 text-green-400 font-mono text-[10px] p-4 rounded-2xl border-2 border-green-500/30 shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed bottom-20 right-4 z-[200] w-80 max-h-96 bg-black/95 text-green-400 font-mono text-[10px] p-4 rounded-2xl border-2 border-green-500/30 shadow-2xl flex flex-col overflow-hidden">
       <div className="flex justify-between items-center mb-2 border-b border-green-500/20 pb-2">
-        <span className="font-bold uppercase tracking-widest"><i className="fas fa-bug mr-2"></i>SISTEMA LOGS</span>
+        <span className="font-bold uppercase tracking-widest flex items-center">
+          <i className="fas fa-microchip mr-2 animate-pulse"></i>SISTEMA LOGS
+        </span>
         <button onClick={onClose} className="hover:text-white"><i className="fas fa-times"></i></button>
       </div>
-      <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-1">
         {logs.length === 0 ? <p className="opacity-40 italic">Esperando eventos...</p> : 
           logs.map((log, i) => <div key={i} className="leading-tight break-words">{log}</div>)
         }
@@ -314,25 +316,28 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar si se está escribiendo en un input
+      // Ignorar si se está escribiendo en un input o textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
+      const key = e.key;
+      
       setKonamiProgress(prev => {
-        const next = [...prev, e.key];
+        const next = [...prev, key];
         const matchLength = next.length;
         
-        // Comparación insensible a mayúsculas para 'a' y 'b'
+        // Comparación insensible a mayúsculas para las letras finales del código Konami
         const expected = KONAMI_CODE.slice(0, matchLength);
-        const isMatch = next.every((key, idx) => {
-           const exp = expected[idx];
-           if (exp.length === 1) return key.toLowerCase() === exp.toLowerCase();
-           return key === exp;
+        const isMatch = next.every((k, idx) => {
+           const targetKey = expected[idx];
+           // Si es una letra (a o b), ignorar mayúsculas
+           if (targetKey.length === 1) return k.toLowerCase() === targetKey.toLowerCase();
+           return k === targetKey;
         });
         
         if (isMatch) {
-          addLog(`Konami: Tecla correcta (${matchLength}/${KONAMI_CODE.length})`);
+          addLog(`Konami: Tecla "${key}" correcta (${matchLength}/${KONAMI_CODE.length})`);
           if (matchLength === KONAMI_CODE.length) {
-            addLog("¡CÓDIGO KONAMI ACTIVADO!");
+            addLog("--- 🗝️ CÓDIGO KONAMI ACTIVADO ---");
             unlockAchievement('hidden_discoverer');
             setShowKonamiEffect(true);
             setView(GameView.EDITOR);
@@ -341,7 +346,10 @@ const App: React.FC = () => {
           return next;
         }
         
-        if (next.length > 0) addLog("Konami: Secuencia rota. Reiniciando...");
+        // Si no hay coincidencia, avisar y reiniciar
+        if (prev.length > 0) {
+          addLog(`Konami: Tecla "${key}" incorrecta. Secuencia reiniciada.`);
+        }
         return [];
       });
     };
