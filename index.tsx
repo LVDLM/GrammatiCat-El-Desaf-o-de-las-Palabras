@@ -1,12 +1,9 @@
 
-// Intentamos detectar si process ya existe antes de tocar nada para no romper la inyección de Vercel
+// Polyfill ultra-seguro: Solo inicializa si no existe nada para no borrar lo que inyecte el compilador
 if (typeof window !== 'undefined') {
   const win = window as any;
-  if (!win.process) {
-    win.process = { env: {} };
-  } else if (!win.process.env) {
-    win.process.env = {};
-  }
+  if (!win.process) win.process = {};
+  if (!win.process.env) win.process.env = {};
 }
 
 import React from 'react';
