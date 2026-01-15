@@ -10,104 +10,119 @@ const addLog = (msg: string, isError: boolean = false) => {
   window.dispatchEvent(new CustomEvent('grammaticat-debug-update'));
 };
 
-// Intenta leer de process.env (Vercel Build) o de las variables públicas
-const supabaseUrl = (process.env as any).NEXT_PUBLIC_SUPABASE_URL || (process.env as any).SUPABASE_URL || '';
-const supabaseKey = (process.env as any).NEXT_PUBLIC_SUPABASE_ANON_KEY || (process.env as any).SUPABASE_ANON_KEY || '';
+// Acceso directo: Vital para que Vercel/Vite/Webpack inyecten el valor en build-time
+const supabaseUrl = process.env.SUPABASE_URL || (process.env as any).NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || (process.env as any).NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl) addLog("Falta SUPABASE_URL en la configuración.", true);
-if (!supabaseKey) addLog("Falta SUPABASE_ANON_KEY en la configuración.", true);
+addLog("--- DIAGNÓSTICO DE INICIO ---");
+if (!supabaseUrl) {
+  addLog("URL de Supabase no detectada. Verifica las Variables de Entorno en Vercel y REDESPLIEGA.", true);
+} else {
+  addLog(`URL detectada: ${supabaseUrl.substring(0, 20)}...`);
+}
+
+if (!supabaseKey) {
+  addLog("Clave Anónima no detectada. Revisa la configuración de Vercel.", true);
+} else {
+  addLog("Clave detectada correctamente.");
+}
 
 export const supabase = (supabaseUrl && supabaseKey) 
   ? createClient(supabaseUrl, supabaseKey) 
   : null;
 
-if (supabase) addLog("Cliente Supabase inicializado correctamente.");
+if (supabase) addLog("¡Cliente Supabase listo para la acción!");
 
 export const saveLevelOnline = async (level: Level) => {
   if (!supabase) {
-    addLog("Error: Supabase no configurado.", true);
+    addLog("Error crítico: El cliente Supabase no está inicializado.", true);
     return { error: 'No Config' };
   }
   
-  addLog(`Enviando nivel: ${level.title}...`);
+  addLog(`Publicando: "${level.title}"...`);
   
-  // No enviamos el ID para que la DB use su SERIAL/IDENTITY
-  const { data, error } = await supabase
-    .from('levels')
-    .insert([{
-      title: level.title,
-      text: level.text,
-      target_category: level.targetCategory || 'Sustantivo',
-      words: level.words,
-      time_limit: level.timeLimit || 30
-    }]);
-    
-  if (error) {
-    addLog(`SUPABASE ERROR [${error.code}]: ${error.message}`, true);
-    if (error.hint) addLog(`Pista: ${error.hint}`, false);
-  } else {
-    addLog("¡Nivel guardado con éxito en la nube!");
+  try {
+    const { data, error } = await supabase
+      .from('levels')
+      .insert([{
+        title: level.title,
+        text: level.text,
+        target_category: level.targetCategory || 'Sustantivo',
+        words: level.words,
+        time_limit: level.timeLimit || 30
+      }]);
+      
+    if (error) {
+      addLog(`Error DB [${error.code}]: ${error.message}`, true);
+      console.error("Detalle error:", error);
+    } else {
+      addLog("¡Nivel guardado correctamente en la nube!");
+    }
+    return { data, error };
+  } catch (err: any) {
+    addLog(`Excepción de red: ${err.message}`, true);
+    return { error: err.message };
   }
-
-  return { data, error };
 };
 
 export const fetchCommunityLevels = async (): Promise<Level[]> => {
   if (!supabase) return [];
   
-  const { data, error } = await supabase
-    .from('levels')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('levels')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      addLog(`Error carga: ${error.message}`, true);
+      return [];
+    }
     
-  if (error) {
-    addLog(`Error al descargar niveles: ${error.message}`, true);
+    return (data || []).map(d => ({
+      id: d.id,
+      title: d.title,
+      text: d.text,
+      targetCategory: d.target_category,
+      words: d.words,
+      timeLimit: d.time_limit
+    }));
+  } catch (e) {
     return [];
   }
-  
-  return (data || []).map(d => ({
-    id: d.id,
-    title: d.title,
-    text: d.text,
-    targetCategory: d.target_category,
-    words: d.words,
-    timeLimit: d.time_limit
-  }));
 };
 
 export const saveScore = async (entry: LeaderboardEntry) => {
   if (!supabase) return { error: 'No Config' };
   
-  addLog(`Enviando puntuación: ${entry.name} -> ${entry.score}...`);
-  const { data, error } = await supabase
-    .from('leaderboard')
-    .insert([{
-      name: entry.name,
-      score: entry.score
-    }]);
-    
-  if (error) {
-    addLog(`ERROR RANKING [${error.code}]: ${error.message}`, true);
-  } else {
-    addLog("¡Puntuación registrada en el servidor!");
+  addLog(`Enviando récord: ${entry.name}...`);
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .insert([{
+        name: entry.name,
+        score: entry.score
+      }]);
+      
+    if (error) addLog(`Error Ranking: ${error.message}`, true);
+    else addLog("¡Puntuación registrada!");
+    return { data, error };
+  } catch (e: any) {
+    addLog(`Fallo de conexión: ${e.message}`, true);
+    return { error: e.message };
   }
-
-  return { data, error };
 };
 
 export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
   if (!supabase) return [];
-  
-  const { data, error } = await supabase
-    .from('leaderboard')
-    .select('*')
-    .order('score', { ascending: false })
-    .limit(10);
-    
-  if (error) {
-    addLog(`Error al descargar ranking: ${error.message}`, true);
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .order('score', { ascending: false })
+      .limit(10);
+    return data || [];
+  } catch (e) {
     return [];
   }
-  
-  return data || [];
 };

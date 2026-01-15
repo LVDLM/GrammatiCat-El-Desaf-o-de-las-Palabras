@@ -2,10 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { WordClass } from "../types";
 
-// Importamos addLog indirectamente mediante eventos para no crear dependencias circulares
 const logToDebug = (msg: string, isError: boolean = false) => {
-  console.log(msg); // También a la consola real
-  // Usamos el sistema de logs existente mediante dispatch
   const timestamp = new Date().toLocaleTimeString();
   const fullMsg = `[${timestamp}] ${isError ? '❌ IA:' : 'ℹ️ IA:'} ${msg}`;
   (window as any).debugLogs = (window as any).debugLogs || [];
@@ -14,20 +11,21 @@ const logToDebug = (msg: string, isError: boolean = false) => {
 };
 
 export const analyzeTextWithAI = async (text: string) => {
-  const apiKey = process.env.API_KEY || (process.env as any).NEXT_PUBLIC_API_KEY;
+  // Acceso directo para que el compilador lo detecte
+  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
   
   if (!apiKey) {
-    logToDebug("No se encontró API_KEY para Gemini.", true);
+    logToDebug("No se detectó la clave API_KEY. Revisa Vercel.", true);
     throw new Error("Falta API_KEY");
   }
 
   const ai = new GoogleGenAI({ apiKey });
   
   try {
-    logToDebug("Iniciando análisis gramatical con Gemini...");
+    logToDebug("Llamando a Gemini para análisis...");
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Analiza este texto y clasifica CADA palabra: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante. 
+      contents: `Clasifica gramaticalmente CADA palabra de este texto: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante. 
       Devuelve solo un JSON array de objetos {"text": "palabra", "category": "Clase"}.
       Texto: "${text}"`,
       config: {
@@ -50,12 +48,12 @@ export const analyzeTextWithAI = async (text: string) => {
     });
 
     const textOutput = response.text;
-    if (!textOutput) throw new Error("Respuesta vacía de la IA");
+    if (!textOutput) throw new Error("Sin respuesta del modelo");
     
-    logToDebug("Análisis completado con éxito.");
+    logToDebug("Análisis completado.");
     return JSON.parse(textOutput);
   } catch (e: any) {
-    logToDebug(e.message || "Error desconocido en la llamada a la IA", true);
+    logToDebug(`Fallo en IA: ${e.message}`, true);
     throw e;
   }
 };

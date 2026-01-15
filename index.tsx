@@ -1,10 +1,14 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Polyfill for process.env to prevent crashes in environments without a bundler
-if (typeof (window as any).process === 'undefined') {
-  (window as any).process = { env: {} };
+// Polyfill seguro: Solo inicializa si no existe nada, preservando lo que el bundler inyecte
+const globalWin = window as any;
+if (typeof globalWin.process === 'undefined') {
+  globalWin.process = { env: {} };
+} else if (!globalWin.process.env) {
+  globalWin.process.env = {};
 }
 
 const rootElement = document.getElementById('root');
