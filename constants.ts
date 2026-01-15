@@ -788,8 +788,8 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "126-21", text: "de", category: WordClass.PREPOSICION },
       { id: "126-22", text: "todas", category: WordClass.PRONOMBRE },
     ]
-  }
-    {
+  },
+  {
     id: 127,
     title: "Campos de Castilla - Machado",
     categoryGroup: 'Literatura en español',
