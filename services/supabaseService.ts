@@ -11,42 +11,28 @@ export const addLog = (msg: string, isError: boolean = false) => {
 };
 
 /**
- * IMPORTANTE PARA VERCEL:
- * Para que las variables sean accesibles en el navegador (client-side),
- * deben estar definidas en el panel de Vercel con el prefijo NEXT_PUBLIC_
- * Ejemplo: NEXT_PUBLIC_SUPABASE_URL
+ * Acceso directo a variables. 
+ * Vercel inyecta estas variables durante la compilación si tienen el prefijo NEXT_PUBLIC_
  */
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                    (process.env as any).SUPABASE_URL || 
+                    '';
 
-const getSupabaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_SUPABASE_URL || 
-         process.env.SUPABASE_URL || 
-         (import.meta as any).env?.VITE_SUPABASE_URL ||
-         (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_URL ||
-         '';
-};
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                    (process.env as any).SUPABASE_ANON_KEY || 
+                    '';
 
-const getSupabaseKey = (): string => {
-  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-         process.env.SUPABASE_ANON_KEY || 
-         (import.meta as any).env?.VITE_SUPABASE_ANON_KEY ||
-         (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-         '';
-};
-
-const supabaseUrl = getSupabaseUrl();
-const supabaseKey = getSupabaseKey();
-
-addLog("--- INICIANDO DIAGNÓSTICO ---");
-if (!supabaseUrl) {
-  addLog("URL Supabase: NO DETECTADA. Revisa Vercel (debe usar NEXT_PUBLIC_).", true);
+addLog("--- DIAGNÓSTICO DE CONEXIÓN ---");
+if (!supabaseUrl || supabaseUrl === '') {
+  addLog("URL: ⚠️ VACÍA. Revisa NEXT_PUBLIC_SUPABASE_URL en Vercel.", true);
 } else {
-  addLog(`URL detectada: ${supabaseUrl.substring(0, 15)}...`);
+  addLog(`URL: Detectada (${supabaseUrl.substring(0, 15)}...)`);
 }
 
-if (!supabaseKey) {
-  addLog("Key Supabase: NO DETECTADA. Revisa Vercel (debe usar NEXT_PUBLIC_).", true);
+if (!supabaseKey || supabaseKey === '') {
+  addLog("KEY: ⚠️ VACÍA. Revisa NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.", true);
 } else {
-  addLog("Key detectada: OK");
+  addLog("KEY: Detectada OK");
 }
 
 export const supabase = (supabaseUrl && supabaseKey) 
@@ -54,16 +40,16 @@ export const supabase = (supabaseUrl && supabaseKey)
   : null;
 
 if (supabase) {
-  addLog("✅ Supabase inicializado correctamente.");
+  addLog("✅ Cliente Supabase inicializado.");
 }
 
 export const saveLevelOnline = async (level: Level) => {
   if (!supabase) {
-    addLog("Error: Supabase no configurado. No se puede guardar.", true);
+    addLog("Error: Supabase no configurado en el cliente.", true);
     return { error: 'No Config' };
   }
   
-  addLog(`Guardando nivel online: "${level.title}"...`);
+  addLog(`Publicando: "${level.title}"...`);
   
   try {
     const { data, error } = await supabase
@@ -77,13 +63,13 @@ export const saveLevelOnline = async (level: Level) => {
       }]);
       
     if (error) {
-      addLog(`Error Supabase [${error.code}]: ${error.message}`, true);
+      addLog(`Error Supabase: ${error.message}`, true);
     } else {
-      addLog("¡Nivel publicado exitosamente!");
+      addLog("¡Nivel guardado en la nube!");
     }
     return { data, error };
   } catch (err: any) {
-    addLog(`Excepción de red: ${err.message}`, true);
+    addLog(`Excepción: ${err.message}`, true);
     return { error: err.message };
   }
 };
@@ -96,7 +82,7 @@ export const fetchCommunityLevels = async (): Promise<Level[]> => {
       .select('*')
       .order('created_at', { ascending: false });
     if (error) {
-      addLog(`Carga niveles: ${error.message}`, true);
+      addLog(`Error carga: ${error.message}`, true);
       return [];
     }
     return (data || []).map(d => ({
@@ -114,16 +100,13 @@ export const fetchCommunityLevels = async (): Promise<Level[]> => {
 
 export const saveScore = async (entry: LeaderboardEntry) => {
   if (!supabase) return { error: 'No Config' };
-  addLog(`Guardando puntuación: ${entry.name}...`);
   try {
     const { data, error } = await supabase
       .from('leaderboard')
       .insert([{ name: entry.name, score: entry.score }]);
-    if (error) addLog(`Error Leaderboard: ${error.message}`, true);
-    else addLog("¡Puntuación guardada!");
+    if (error) addLog(`Error ranking: ${error.message}`, true);
     return { data, error };
   } catch (e: any) {
-    addLog(`Error en envío: ${e.message}`, true);
     return { error: e.message };
   }
 };
