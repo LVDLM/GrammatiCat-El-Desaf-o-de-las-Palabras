@@ -518,38 +518,57 @@ const App: React.FC = () => {
         <div className="w-full h-full flex flex-col items-center justify-start md:justify-center animate-in zoom-in duration-500 overflow-hidden py-4">
           <GameHUD state={gameState} target={gameState.targetCategory} />
           
-          <div className={`w-full max-w-6xl rounded-[3rem] md:rounded-[5rem] p-6 md:p-12 shadow-2xl border-b-8 flex flex-col justify-center relative flex-1 overflow-hidden mx-2 ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
-            <div className={`relative z-10 flex flex-wrap justify-center items-center gap-x-2 md:gap-x-4 gap-y-3 md:gap-y-6 font-black leading-tight h-full content-center ${gameFontSize} ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
-              {currentLevel.words.map((w) => (
-                <span 
-                  key={w.id} 
-                  onClick={() => handleWordClick(w)} 
-                  className={`cursor-pointer px-3 md:px-5 py-1 md:py-2 rounded-2xl md:rounded-[2rem] transition-all duration-300 transform select-none
-                    ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-[0_5px_0_rgb(22,163,74)] -rotate-2 scale-105 pointer-events-none' : ''}
-                    ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-2 scale-105 opacity-40 pointer-events-none' : ''}
-                    ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''}
-                    ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 md:ring-8 ring-yellow-400 animate-pulse shadow-yellow-200' : ''}
-                    ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}
-                  `}
-                >
-                  {w.text}
-                </span>
-              ))}
+          {/* Contenedor del Juego: Ahora con overflow-visible para permitir que el popup rebose */}
+          <div className="w-full max-w-6xl relative flex-1 mx-2 flex flex-col items-center justify-center">
+            
+            <div className={`w-full h-full rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 shadow-2xl border-b-8 flex flex-col justify-center overflow-hidden transition-all ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+              <div className={`relative z-10 flex flex-wrap justify-center items-center gap-x-2 md:gap-x-4 gap-y-3 md:gap-y-6 font-black leading-tight h-full content-center ${gameFontSize} ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
+                {currentLevel.words.map((w) => (
+                  <span 
+                    key={w.id} 
+                    onClick={() => handleWordClick(w)} 
+                    className={`cursor-pointer px-3 md:px-5 py-1 md:py-2 rounded-2xl md:rounded-[2rem] transition-all duration-300 transform select-none
+                      ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-[0_5px_0_rgb(22,163,74)] -rotate-2 scale-105 pointer-events-none' : ''}
+                      ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-2 scale-105 opacity-40 pointer-events-none' : ''}
+                      ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''}
+                      ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 md:ring-8 ring-yellow-400 animate-pulse shadow-yellow-200' : ''}
+                      ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}
+                    `}
+                  >
+                    {w.text}
+                  </span>
+                ))}
+              </div>
             </div>
 
+            {/* Mensaje de Recompensa: Opción B (REBOSANDO LÍMITES) */}
             {!gameState.isPlaying && !gameState.isGameOver && lastReward && (
-              <div className="absolute inset-0 bg-indigo-900/60 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-in fade-in zoom-in duration-500 rounded-[3rem] md:rounded-[5rem]">
-                <div className="bg-white p-6 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-b-[8px] md:border-b-[12px] border-green-500 text-center scale-100 md:scale-110 transform md:rotate-[-2deg] mx-4">
-                   <h2 className="text-2xl md:text-5xl font-black text-indigo-900 mb-4 md:mb-6 italic tracking-tighter uppercase">¡NIVEL COMPLETADO!</h2>
-                   <div className="bg-indigo-50 p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-4 flex flex-col items-center">
-                      <div className={`text-4xl md:text-7xl mb-2 md:mb-4 animate-bounce ${lastReward.color}`}>
+              <div className="absolute inset-0 flex items-center justify-center z-[100] animate-in fade-in zoom-in duration-500 px-4">
+                <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-sm rounded-[3rem] md:rounded-[5rem]"></div>
+                
+                {/* La tarjeta que "rebosa" */}
+                <div className="relative bg-white p-8 md:p-14 rounded-[3.5rem] md:rounded-[4.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.5)] border-[8px] md:border-[12px] border-indigo-500 text-center scale-100 md:scale-110 transform rotate-[-1deg]">
+                   <div className="absolute -top-10 -left-10 w-24 h-24 bg-yellow-400 rounded-full border-8 border-white flex items-center justify-center text-4xl text-indigo-900 rotate-12 shadow-lg">
+                      <i className="fas fa-trophy"></i>
+                   </div>
+                   
+                   <h2 className="text-3xl md:text-6xl font-black text-indigo-900 mb-6 italic tracking-tighter uppercase leading-none">¡GENIAL!</h2>
+                   
+                   <div className="bg-indigo-50 p-6 md:p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center min-w-[280px]">
+                      <div className={`text-6xl md:text-9xl mb-4 animate-bounce ${lastReward.color}`}>
                         <i className={`fas ${lastReward.icon}`}></i>
                       </div>
-                      <span className={`text-xl md:text-4xl font-black italic tracking-tight ${lastReward.color}`}>
+                      <span className={`text-2xl md:text-5xl font-black italic tracking-tight ${lastReward.color} uppercase`}>
                         {lastReward.label}
                       </span>
                    </div>
-                   <p className="text-slate-400 font-bold animate-pulse text-sm">Cargando siguiente reto...</p>
+                   
+                   <div className="flex flex-col items-center">
+                      <p className="text-slate-400 font-black animate-pulse text-sm uppercase tracking-widest">Siguiente reto en camino...</p>
+                      <div className="mt-4 w-48 h-3 bg-slate-100 rounded-full overflow-hidden">
+                         <div className="h-full bg-indigo-500 animate-[loading_3s_linear]"></div>
+                      </div>
+                   </div>
                 </div>
               </div>
             )}

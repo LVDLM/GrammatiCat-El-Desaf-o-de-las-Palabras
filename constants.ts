@@ -788,8 +788,8 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "126-21", text: "de", category: WordClass.PREPOSICION },
       { id: "126-22", text: "todas", category: WordClass.PRONOMBRE },
     ]
-  },
-  {
+  }
+    {
     id: 127,
     title: "Campos de Castilla - Machado",
     categoryGroup: 'Literatura en español',
@@ -1407,7 +1407,6 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
 	]
 	},
 	];
-
 
 export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   { id: 'first_steps', title: '¡Primeros pasos!', description: 'Completa tu primer nivel con éxito.', icon: 'fa-shoe-prints', unlocked: false },
