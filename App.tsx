@@ -6,7 +6,7 @@ import { GameHUD } from './components/GameHUD';
 import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
 import { Leaderboard } from './components/Leaderboard';
-import { fetchCommunityLevels, saveScore, debugLogs } from './services/supabaseService';
+import { fetchCommunityLevels, saveScore, debugLogs, addLog } from './services/supabaseService';
 
 // Helper for pluralization
 export const getPluralCategory = (cat: WordClass): string => {
@@ -91,6 +91,15 @@ const App: React.FC = () => {
   
   const [lastUnlocked, setLastUnlocked] = useState<Achievement | null>(null);
   const timerRef = useRef<any>(null);
+
+  // Sincronizar clase konami-active con el body para que el Editor lo detecte
+  useEffect(() => {
+    if (showKonamiEffect) {
+      document.body.classList.add('konami-active');
+    } else {
+      document.body.classList.remove('konami-active');
+    }
+  }, [showKonamiEffect]);
 
   const gameFontSize = useMemo(() => {
     if (!currentLevel) return 'text-3xl md:text-5xl';
@@ -305,13 +314,25 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignorar si se está escribiendo en un input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
       setKonamiProgress(prev => {
         const next = [...prev, e.key];
         const matchLength = next.length;
-        const expected = KONAMI_CODE.slice(0, matchLength);
         
-        if (JSON.stringify(next) === JSON.stringify(expected)) {
+        // Comparación insensible a mayúsculas para 'a' y 'b'
+        const expected = KONAMI_CODE.slice(0, matchLength);
+        const isMatch = next.every((key, idx) => {
+           const exp = expected[idx];
+           if (exp.length === 1) return key.toLowerCase() === exp.toLowerCase();
+           return key === exp;
+        });
+        
+        if (isMatch) {
+          addLog(`Konami: Tecla correcta (${matchLength}/${KONAMI_CODE.length})`);
           if (matchLength === KONAMI_CODE.length) {
+            addLog("¡CÓDIGO KONAMI ACTIVADO!");
             unlockAchievement('hidden_discoverer');
             setShowKonamiEffect(true);
             setView(GameView.EDITOR);
@@ -319,6 +340,8 @@ const App: React.FC = () => {
           }
           return next;
         }
+        
+        if (next.length > 0) addLog("Konami: Secuencia rota. Reiniciando...");
         return [];
       });
     };

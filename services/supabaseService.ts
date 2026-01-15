@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Level, LeaderboardEntry } from '../types';
 
 export const debugLogs: string[] = [];
-const addLog = (msg: string, isError: boolean = false) => {
+export const addLog = (msg: string, isError: boolean = false) => {
   const timestamp = new Date().toLocaleTimeString();
   debugLogs.push(`[${timestamp}] ${isError ? '❌' : 'ℹ️'} ${msg}`);
   if (debugLogs.length > 50) debugLogs.shift();
