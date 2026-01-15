@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { WordClass, Level, WordData } from '../types';
 import { analyzeTextWithAI } from '../services/geminiService';
-import { saveLevelOnline, supabase } from '../services/supabaseService';
+import { saveLevelLocally, addLog } from '../services/supabaseService';
 
 interface Props {
   onSave: (level: Level) => void;
@@ -29,7 +29,7 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
   const [tokens, setTokens] = useState<WordData[]>([]);
   const [activeCategory, setActiveCategory] = useState<WordClass | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   const isMidnight = document.body.classList.contains('konami-active');
 
@@ -62,11 +62,9 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
         })));
         setStep('TAGGING');
       } else {
-        alert("La IA no devolvió resultados válidos.");
         prepareTagging();
       }
     } catch (e: any) {
-      alert(`Error de IA: ${e.message || 'Error de conexión'}. Revisa la consola de Debug para más detalles.`);
       prepareTagging();
     } finally {
       setIsAnalyzing(false);
@@ -82,24 +80,10 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
     ));
   };
 
-  const mergeTokens = (index: number) => {
-    if (index >= tokens.length - 1) return;
-    const newTokens = [...tokens];
-    const first = newTokens[index];
-    const second = newTokens[index + 1];
-    newTokens[index] = {
-      ...first,
-      text: `${first.text} ${second.text}`,
-      category: first.category || second.category 
-    };
-    newTokens.splice(index + 1, 1);
-    setTokens(newTokens);
-  };
-
-  const handleSave = async (online: boolean) => {
+  const handleSave = (shouldExport: boolean = false) => {
     const taggedTokens = tokens.filter(t => t.category !== null);
     if (taggedTokens.length === 0) {
-      alert("Etiqueta al menos una palabra para que el nivel sea jugable.");
+      alert("Etiqueta al menos una palabra.");
       return;
     }
 
@@ -109,21 +93,19 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
       text: tokens.map(t => t.text).join(' '),
       words: tokens,
       timeLimit: 30,
-      targetCategory: taggedTokens[0].category // Usamos la primera categoría etiquetada como objetivo
+      targetCategory: taggedTokens[0].category
     };
 
-    if (online) {
-      setIsSaving(true);
-      const { error } = await saveLevelOnline(newLevel);
-      setIsSaving(false);
-      if (error) {
-        alert("No se pudo publicar online. Revisa los logs de Debug.");
-        return;
-      } else {
-        alert("¡Nivel publicado!");
-      }
+    if (shouldExport) {
+      const code = JSON.stringify(newLevel, null, 2);
+      navigator.clipboard.writeText(code);
+      setCopied(true);
+      addLog("Código de nivel copiado al portapapeles.");
+      setTimeout(() => setCopied(false), 2000);
+      return;
     }
-    
+
+    saveLevelLocally(newLevel);
     onSave(newLevel);
   };
 
@@ -135,8 +117,8 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-2xl flex items-center justify-center"><i className="fas fa-pen-nib"></i></div>
             <div>
-              <h2 className="text-xl font-black italic uppercase leading-tight">EDITOR MAESTRO</h2>
-              <p className="text-[10px] font-bold opacity-70 uppercase">{step === 'INPUT' ? 'Fase 1: Texto' : 'Fase 2: Etiquetas'}</p>
+              <h2 className="text-xl font-black italic uppercase leading-tight">CREADOR DE NIVELES</h2>
+              <p className="text-[10px] font-bold opacity-70 uppercase">Crea, guarda localmente o exporta el código</p>
             </div>
           </div>
           <button onClick={onClose} className="hover:bg-black/20 w-10 h-10 rounded-full transition-colors flex items-center justify-center"><i className="fas fa-times"></i></button>
@@ -153,9 +135,9 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
               <div className="grid grid-cols-2 gap-4">
                 <button onClick={handleAISuggestion} disabled={isAnalyzing || !text.trim() || isTooLong} className="py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black disabled:opacity-50">
                   {isAnalyzing ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-magic mr-2"></i>}
-                  AUTO-IA
+                  ANÁLISIS IA
                 </button>
-                <button onClick={prepareTagging} disabled={!text.trim() || isTooLong} className="py-4 bg-slate-200 text-slate-700 rounded-xl font-black">MANUAL</button>
+                <button onClick={prepareTagging} disabled={!text.trim() || isTooLong} className="py-4 bg-slate-200 text-slate-700 rounded-xl font-black hover:bg-slate-300 transition-colors">ETIQUETADO MANUAL</button>
               </div>
             </div>
           ) : (
@@ -170,21 +152,21 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
               <div className={`flex-1 overflow-y-auto p-4 rounded-[2rem] border-2 shadow-inner ${isMidnight ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100'}`}>
                 <div className="flex flex-wrap gap-x-2 gap-y-3 justify-center">
                   {tokens.map((token, index) => (
-                    <React.Fragment key={token.id}>
-                      <span onClick={() => toggleWordCategory(token.id)} className={`cursor-pointer px-3 py-1 rounded-xl text-lg font-black transition-all ${token.category ? `${CATEGORY_COLORS[token.category]} text-white` : isMidnight ? 'text-white' : 'text-slate-700'}`}>
-                        {token.text}
-                      </span>
-                      {index < tokens.length - 1 && <button onClick={() => mergeTokens(index)} className="text-slate-300 hover:text-indigo-500"><i className="fas fa-link text-[10px]"></i></button>}
-                    </React.Fragment>
+                    <span key={token.id} onClick={() => toggleWordCategory(token.id)} className={`cursor-pointer px-3 py-1 rounded-xl text-lg font-black transition-all ${token.category ? `${CATEGORY_COLORS[token.category]} text-white` : isMidnight ? 'text-white' : 'text-slate-700 hover:bg-indigo-200'}`}>
+                      {token.text}
+                    </span>
                   ))}
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <button onClick={() => setStep('INPUT')} className="text-indigo-500 text-xs font-black"><i className="fas fa-arrow-left mr-1"></i> VOLVER</button>
+                <button onClick={() => setStep('INPUT')} className="text-indigo-500 text-xs font-black"><i className="fas fa-arrow-left mr-1"></i> VOLVER AL TEXTO</button>
                 <div className="flex gap-2">
-                  <button onClick={() => handleSave(false)} className="px-4 py-2 bg-slate-200 rounded-xl font-black text-xs">LOCAL</button>
-                  <button onClick={() => handleSave(true)} disabled={isSaving} className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-black text-xs">
-                    {isSaving ? 'GUARDANDO...' : 'PUBLICAR ONLINE'}
+                  <button onClick={() => handleSave(true)} className={`px-4 py-2 rounded-xl font-black text-xs transition-all ${copied ? 'bg-green-500 text-white' : 'bg-slate-200 hover:bg-slate-300'}`}>
+                    <i className={`fas ${copied ? 'fa-check' : 'fa-code'} mr-2`}></i>
+                    {copied ? '¡COPIADO!' : 'EXPORTAR JSON'}
+                  </button>
+                  <button onClick={() => handleSave(false)} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-xs shadow-lg">
+                    GUARDAR Y JUGAR
                   </button>
                 </div>
               </div>

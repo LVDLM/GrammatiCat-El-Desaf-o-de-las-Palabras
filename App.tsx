@@ -124,10 +124,11 @@ const App: React.FC = () => {
       const loadCommunity = async () => {
         setIsLoadingCommunity(true);
         try {
-          const onlineLevels = await fetchCommunityLevels();
-          setCommunityLevels(onlineLevels);
+          // Ahora fetchCommunityLevels carga de LocalStorage
+          const localUserLevels = await fetchCommunityLevels();
+          setCommunityLevels(localUserLevels);
         } catch (e) {
-          console.error("Failed to load community levels", e);
+          console.error("Failed to load local levels", e);
         } finally {
           setIsLoadingCommunity(false);
         }
@@ -184,11 +185,11 @@ const App: React.FC = () => {
   const handleSaveScore = async () => {
     if (!playerName.trim()) return;
     setIsSavingScore(true);
-    const { error } = await saveScore({ name: playerName, score: gameState.score });
+    // Ahora saveScore guarda en LocalStorage
+    await saveScore({ name: playerName, score: gameState.score });
     setIsSavingScore(false);
-    if (!error) {
-      setScoreSaved(true);
-    }
+    setScoreSaved(true);
+    addLog(`Puntuación de ${playerName} registrada localmente.`);
   };
 
   const usePowerup = (type: 'hint' | 'clean' | 'shield') => {
@@ -325,17 +326,14 @@ const App: React.FC = () => {
         const next = [...prev, key];
         const matchLength = next.length;
         
-        // Comparación insensible a mayúsculas para las letras finales del código Konami
         const expected = KONAMI_CODE.slice(0, matchLength);
         const isMatch = next.every((k, idx) => {
            const targetKey = expected[idx];
-           // Si es una letra (a o b), ignorar mayúsculas
            if (targetKey.length === 1) return k.toLowerCase() === targetKey.toLowerCase();
            return k === targetKey;
         });
         
         if (isMatch) {
-          addLog(`Konami: Tecla "${key}" correcta (${matchLength}/${KONAMI_CODE.length})`);
           if (matchLength === KONAMI_CODE.length) {
             addLog("--- 🗝️ CÓDIGO KONAMI ACTIVADO ---");
             unlockAchievement('hidden_discoverer');
@@ -344,11 +342,6 @@ const App: React.FC = () => {
             return [];
           }
           return next;
-        }
-        
-        // Si no hay coincidencia, avisar y reiniciar
-        if (prev.length > 0) {
-          addLog(`Konami: Tecla "${key}" incorrecta. Secuencia reiniciada.`);
         }
         return [];
       });
@@ -381,7 +374,6 @@ const App: React.FC = () => {
   return (
     <div className={`min-h-screen w-full flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active konami-unlock-flash' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'}`}>
       
-      {/* Botón flotante Debug */}
       <button 
         onClick={() => setShowDebug(!showDebug)}
         className="fixed bottom-4 right-4 z-[200] w-12 h-12 bg-black/80 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black transition-all border border-white/10"
@@ -456,12 +448,15 @@ const App: React.FC = () => {
                </div>
                
                <h3 className={`text-xl md:text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md pt-8 px-4 ${showKonamiEffect ? 'text-purple-400' : 'text-cyan-300'}`}>
-                 <i className="fas fa-cloud mr-3"></i> Comunidad
+                 <i className="fas fa-user-edit mr-3"></i> Tus Niveles
                </h3>
                <div className="px-4 space-y-4 pb-8">
                  {isLoadingCommunity ? <div className="text-white text-center py-10 animate-pulse"><i className="fas fa-spinner fa-spin text-4xl mb-2 block"></i> Cargando...</div> : (
                    communityLevels.length > 0 ? communityLevels.map(lvl => <LevelCard key={lvl.id} level={lvl} />) : 
-                   <p className="text-white/40 italic text-center py-10 bg-black/10 rounded-3xl border-2 border-dashed border-white/10">No hay textos online.</p>
+                   <div className="text-white/40 italic text-center py-8 bg-black/10 rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center">
+                      <p className="mb-2">Aún no has creado niveles.</p>
+                      <p className="text-[10px] uppercase font-bold">Usa el editor secreto para añadir los tuyos.</p>
+                   </div>
                  )}
                </div>
             </div>
@@ -519,7 +514,6 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* Powerups compactos en movil */}
           <div className="mt-4 md:mt-8 flex gap-3 md:gap-8 flex-wrap justify-center px-4 pb-4">
             {[
               { type: 'hint' as const, icon: 'fa-lightbulb', label: 'PISTA', count: gameState.powerups.hints, color: 'cyan' },
@@ -572,7 +566,7 @@ const App: React.FC = () => {
                   disabled={!playerName.trim() || isSavingScore}
                   className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black shadow-lg transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {isSavingScore ? <i className="fas fa-spinner fa-spin mr-2"></i> : 'GUARDAR PUNTUACIÓN'}
+                  GUARDAR PUNTUACIÓN
                 </button>
               </div>
             )}
@@ -590,7 +584,7 @@ const App: React.FC = () => {
       {view === GameView.LEADERBOARD && <Leaderboard isMidnight={showKonamiEffect} onClose={() => setView(GameView.MENU)} />}
       {view === GameView.EDITOR && (
         <Editor onClose={() => setView(GameView.MENU)} onSave={(newLevel) => {
-          setLevels(prev => [newLevel, ...prev]);
+          setCommunityLevels(prev => [newLevel, ...prev]);
           setView(GameView.MENU);
         }} />
       )}
