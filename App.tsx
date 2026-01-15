@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GameView, GameState, WordClass, Level, WordData, Achievement } from './types';
+import { GameView, GameState, WordClass, Level, WordData, Achievement, LeaderboardEntry } from './types';
 import { INITIAL_LEVELS, LITERARY_LEVELS, KONAMI_CODE, INITIAL_ACHIEVEMENTS } from './constants';
 import { GameHUD } from './components/GameHUD';
 import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
-import { fetchCommunityLevels } from './services/supabaseService';
+import { Leaderboard } from './components/Leaderboard';
+import { fetchCommunityLevels, saveScore } from './services/supabaseService';
 
 // Helper for pluralization
 export const getPluralCategory = (cat: WordClass): string => {
@@ -41,6 +42,9 @@ const App: React.FC = () => {
     };
   });
 
+  const [playerName, setPlayerName] = useState('');
+  const [isSavingScore, setIsSavingScore] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
   const [levels, setLevels] = useState<Level[]>(INITIAL_LEVELS);
   const [literaryLevels] = useState<Level[]>(LITERARY_LEVELS);
   const [communityLevels, setCommunityLevels] = useState<Level[]>([]);
@@ -108,13 +112,14 @@ const App: React.FC = () => {
       mode,
       isPlaying: true,
       isGameOver: false,
-      score: mode === 'CHALLENGE' ? prev.score : 0, // Keep score in challenge series
+      score: mode === 'CHALLENGE' ? prev.score : 0, 
     }));
     setFoundWords([]);
     setErrorWords([]);
     setHighlightedWords([]);
     setCleanedWords([]);
     setLastReward(null);
+    setScoreSaved(false);
     setView(GameView.PLAYING);
   };
 
@@ -128,6 +133,17 @@ const App: React.FC = () => {
     
     startGame(randomLevel, randomCategory, 'CHALLENGE');
   }, [levels, literaryLevels, communityLevels]);
+
+  const handleSaveScore = async () => {
+    if (!playerName.trim()) return;
+    setIsSavingScore(true);
+    const { error } = await saveScore({ name: playerName, score: gameState.score });
+    setIsSavingScore(false);
+    if (!error) {
+      setScoreSaved(true);
+      alert("¡Puntuación guardada!");
+    }
+  };
 
   const usePowerup = (type: 'hint' | 'clean' | 'shield') => {
     if (!gameState.isPlaying || !currentLevel || !gameState.targetCategory) return;
@@ -187,21 +203,19 @@ const App: React.FC = () => {
         stats: { ...prev.stats, nounsFound: prev.stats.nounsFound + 1 }
       }));
 
-      // Check if 100 words achievement
       if (gameState.stats.nounsFound + 1 >= 100) unlockAchievement('noun_expert');
 
       const targetWordsCount = currentLevel.words.filter(w => w.category === gameState.targetCategory).length;
       if (newFound.length === targetWordsCount) {
-        // Speedster achievement
         if (gameState.time > (currentLevel.timeLimit || 30) / 2) unlockAchievement('speedster');
         
         const rewardRoll = Math.random();
         let reward: Reward;
         
-        if (rewardRoll < 0.25) reward = { type: 'hint', label: '+1 Pista', icon: 'fa-lightbulb', color: 'text-cyan-500' };
-        else if (rewardRoll < 0.50) reward = { type: 'cleaner', label: '+1 Limpiar', icon: 'fa-broom', color: 'text-rose-500' };
-        else if (rewardRoll < 0.75) reward = { type: 'shield', label: '+1 Escudo', icon: 'fa-shield-alt', color: 'text-lime-500' };
-        else reward = { type: 'life', label: '+1 Vida Extra', icon: 'fa-heart', color: 'text-rose-600' };
+        if (rewardRoll < 0.25) reward = { type: 'hint', label: '+1 Pista', icon: 'fa-lightbulb', color: 'text-cyan-400' };
+        else if (rewardRoll < 0.50) reward = { type: 'cleaner', label: '+1 Limpiar', icon: 'fa-broom', color: 'text-rose-400' };
+        else if (rewardRoll < 0.75) reward = { type: 'shield', label: '+1 Escudo', icon: 'fa-shield-alt', color: 'text-lime-400' };
+        else reward = { type: 'life', label: '+1 Vida Extra', icon: 'fa-heart', color: 'text-rose-500' };
 
         setLastReward(reward);
         
@@ -233,7 +247,6 @@ const App: React.FC = () => {
         }, 3000); 
       }
     } else {
-      // Penalty: lose time
       if (gameState.powerups.shields > 0) {
         setGameState(prev => ({ ...prev, powerups: { ...prev.powerups, shields: prev.powerups.shields - 1 } }));
         setErrorWords(prev => [...prev, word.id]);
@@ -277,15 +290,15 @@ const App: React.FC = () => {
   const LevelCard = ({ level }: { level: Level }) => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     return (
-      <div className="bg-white rounded-3xl p-6 shadow-xl border-b-4 border-indigo-100 hover:shadow-2xl transition-all hover:-translate-y-1">
-         <h3 className="text-xl font-black text-indigo-900 mb-2 truncate">{level.title}</h3>
+      <div className={`rounded-3xl p-6 shadow-xl border-b-4 transition-all hover:-translate-y-1 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-100'}`}>
+         <h3 className={`text-xl font-black mb-2 truncate ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
          <p className="text-slate-400 text-xs line-clamp-2 mb-4 italic leading-relaxed">"{level.text}"</p>
          <div className="flex flex-wrap gap-2">
             {cats.map(cat => (
               <button 
                 key={cat} 
                 onClick={() => startGame(level, cat, 'PRACTICE')}
-                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95"
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 ${showKonamiEffect ? 'bg-slate-700 hover:bg-indigo-600 text-indigo-300 hover:text-white' : 'bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600'}`}
               >
                 {getPluralCategory(cat)}
               </button>
@@ -296,54 +309,59 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500 overflow-hidden transition-all duration-1000 ${showKonamiEffect ? 'konami-active' : ''}`}>
+    <div className={`min-h-screen w-full flex flex-col items-center justify-center p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active konami-unlock-flash' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'}`}>
       
       {lastUnlocked && (
         <div className="fixed top-8 right-8 z-[100] bg-white p-4 rounded-2xl shadow-2xl border-4 border-yellow-400 animate-in slide-in-from-right duration-500 flex items-center space-x-4">
           <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center text-indigo-900 text-xl"><i className={`fas ${lastUnlocked.icon}`}></i></div>
-          <div><span className="block text-[10px] font-black text-yellow-600 uppercase tracking-widest">¡Logro!</span><span className="block text-lg font-black text-indigo-900">{lastUnlocked.title}</span></div>
+          <div><span className="block text-[10px] font-black text-yellow-600 uppercase tracking-widest text-nowrap">¡Logro!</span><span className="block text-lg font-black text-indigo-900 text-nowrap">{lastUnlocked.title}</span></div>
         </div>
       )}
 
       {view === GameView.MENU && (
         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700">
           <div className="relative mb-12 floating">
-            <h1 className="text-7xl md:text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter select-none">
+            <h1 className="text-7xl md:text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter select-none text-center">
               GRAMMA<span className="text-yellow-300">CAT</span>
             </h1>
-            <div className="absolute -top-12 -right-12 text-6xl text-white opacity-20 rotate-12"><i className="fas fa-cat"></i></div>
+            <div className={`absolute -top-12 -right-12 text-6xl text-white rotate-12 transition-opacity ${showKonamiEffect ? 'opacity-60 text-purple-400' : 'opacity-20'}`}><i className="fas fa-cat"></i></div>
           </div>
           
           <div className="flex flex-col md:flex-row gap-10">
             <button 
               onClick={() => setView(GameView.LEVEL_SELECT)}
-              className="group relative w-72 h-72 bg-white rounded-[3rem] shadow-2xl border-b-8 border-indigo-200 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden"
+              className={`group relative w-72 h-72 rounded-[3rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}
             >
               <div className="absolute inset-0 bg-indigo-600 opacity-0 group-hover:opacity-10 transition-opacity"></div>
               <i className="fas fa-graduation-cap text-7xl text-indigo-500 mb-4 group-hover:rotate-12 transition-transform"></i>
-              <span className="text-3xl font-black text-indigo-900 uppercase italic tracking-tighter">PRÁCTICA</span>
+              <span className={`text-3xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>PRÁCTICA</span>
               <p className="text-xs font-bold text-slate-400 mt-2">Explora y elige textos</p>
             </button>
 
             <button 
               onClick={startRandomChallenge}
-              className="group relative w-72 h-72 bg-yellow-400 rounded-[3rem] shadow-2xl border-b-8 border-yellow-600 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden"
+              className={`group relative w-72 h-72 rounded-[3rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950 shadow-purple-900/40' : 'bg-yellow-400 border-yellow-600'}`}
             >
               <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
-              <i className="fas fa-fire text-7xl text-indigo-900 mb-4 group-hover:scale-125 transition-transform animate-pulse"></i>
-              <span className="text-3xl font-black text-indigo-900 uppercase italic tracking-tighter">RETO</span>
-              <p className="text-xs font-bold text-indigo-800/60 mt-2">¡Partida rápida aleatoria!</p>
+              <i className={`fas fa-fire text-7xl mb-4 group-hover:scale-125 transition-transform animate-pulse ${showKonamiEffect ? 'text-yellow-400' : 'text-indigo-900'}`}></i>
+              <span className={`text-3xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO</span>
+              <p className={`text-xs font-bold mt-2 ${showKonamiEffect ? 'text-purple-300' : 'text-indigo-800/60'}`}>¡Partida rápida aleatoria!</p>
             </button>
           </div>
 
-          <div className="mt-16 flex gap-4">
+          <div className="mt-16 flex flex-wrap justify-center gap-4">
+            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-8 py-3 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black border-2 border-yellow-500 transition-all flex items-center shadow-lg">
+              <i className="fas fa-list-ol mr-3"></i> RANKING
+            </button>
             <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-8 py-3 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 transition-all flex items-center">
               <i className="fas fa-trophy mr-3"></i> LOGROS
             </button>
-            <div className="text-white/40 text-xs flex items-center italic">
-              <i className="fas fa-keyboard mr-2"></i> Konami Code para Editor
-            </div>
           </div>
+          {showKonamiEffect && (
+            <div className="mt-6 text-xs text-cyan-400 italic animate-pulse">
+              <i className="fas fa-keyboard mr-2"></i> MODO SECRETO ACTIVO
+            </div>
+          )}
         </div>
       )}
 
@@ -357,12 +375,12 @@ const App: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
             <div className="space-y-6 lg:col-span-1">
-               <h3 className="text-2xl font-black text-yellow-300 uppercase tracking-tighter flex items-center drop-shadow-md">
+               <h3 className={`text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md ${showKonamiEffect ? 'text-cyan-400' : 'text-yellow-300'}`}>
                  <i className="fas fa-graduation-cap mr-3"></i> Entrenamiento
                </h3>
                {levels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
                
-               <h3 className="text-2xl font-black text-cyan-300 uppercase tracking-tighter flex items-center drop-shadow-md pt-8">
+               <h3 className={`text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md pt-8 ${showKonamiEffect ? 'text-purple-400' : 'text-cyan-300'}`}>
                  <i className="fas fa-cloud mr-3"></i> Comunidad
                </h3>
                {isLoadingCommunity ? <div className="text-white text-center py-10 animate-pulse"><i className="fas fa-spinner fa-spin text-4xl mb-2 block"></i> Cargando...</div> : (
@@ -372,8 +390,8 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-6 lg:col-span-2">
-               <h3 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center drop-shadow-md">
-                 <i className="fas fa-feather-alt mr-3 text-rose-300"></i> Literatura Clásica
+               <h3 className={`text-2xl font-black uppercase tracking-tighter flex items-center drop-shadow-md ${showKonamiEffect ? 'text-rose-400' : 'text-white'}`}>
+                 <i className="fas fa-feather-alt mr-3"></i> Literatura Clásica
                </h3>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {literaryLevels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
@@ -387,8 +405,8 @@ const App: React.FC = () => {
         <div className="w-full flex flex-col items-center justify-center animate-in zoom-in duration-500">
           <GameHUD state={gameState} target={gameState.targetCategory} />
           
-          <div className="w-full max-w-5xl bg-white rounded-[5rem] p-8 md:p-20 shadow-2xl border-b-8 border-indigo-200 min-h-[450px] flex flex-col justify-center relative">
-            <div className="relative z-10 flex flex-wrap justify-center items-center gap-x-4 md:gap-x-6 gap-y-6 md:gap-y-8 text-3xl md:text-5xl font-black text-slate-800 leading-normal">
+          <div className={`w-full max-w-5xl rounded-[5rem] p-8 md:p-20 shadow-2xl border-b-8 min-h-[450px] flex flex-col justify-center relative ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+            <div className={`relative z-10 flex flex-wrap justify-center items-center gap-x-4 md:gap-x-6 gap-y-6 md:gap-y-8 text-3xl md:text-5xl font-black leading-normal ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
               {currentLevel.words.map((w) => (
                 <span 
                   key={w.id} 
@@ -398,7 +416,7 @@ const App: React.FC = () => {
                     ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-3 scale-110 opacity-40 pointer-events-none' : ''}
                     ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''}
                     ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-8 ring-yellow-400 animate-pulse shadow-yellow-200' : ''}
-                    ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? 'hover:bg-indigo-50 hover:text-indigo-600' : ''}
+                    ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}
                   `}
                 >
                   {w.text}
@@ -435,57 +453,83 @@ const App: React.FC = () => {
               onClick={() => usePowerup('hint')}
               disabled={gameState.powerups.hints <= 0}
               className={`group relative w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95
-                ${gameState.powerups.hints > 0 ? 'bg-cyan-300 border-cyan-500 hover:bg-cyan-200' : 'bg-slate-200 border-slate-300 opacity-50'}
+                ${gameState.powerups.hints > 0 ? (showKonamiEffect ? 'bg-cyan-600 border-cyan-800' : 'bg-cyan-300 border-cyan-500 hover:bg-cyan-200') : 'bg-slate-700 border-slate-800 opacity-50'}
               `}
             >
-              <i className="fas fa-lightbulb text-3xl md:text-4xl text-cyan-800 mb-1"></i>
-              <span className="text-[10px] md:text-xs font-black text-cyan-900 uppercase">PISTA ({gameState.powerups.hints})</span>
+              <i className={`fas fa-lightbulb text-3xl md:text-4xl mb-1 ${showKonamiEffect ? 'text-cyan-200' : 'text-cyan-800'}`}></i>
+              <span className={`text-[10px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : 'text-cyan-900'}`}>PISTA ({gameState.powerups.hints})</span>
             </button>
 
             <button 
               onClick={() => usePowerup('clean')}
               disabled={gameState.powerups.cleaners <= 0}
               className={`group relative w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95
-                ${gameState.powerups.cleaners > 0 ? 'bg-rose-300 border-rose-500 hover:bg-rose-200' : 'bg-slate-200 border-slate-300 opacity-50'}
+                ${gameState.powerups.cleaners > 0 ? (showKonamiEffect ? 'bg-rose-600 border-rose-800' : 'bg-rose-300 border-rose-500 hover:bg-rose-200') : 'bg-slate-700 border-slate-800 opacity-50'}
               `}
             >
-              <i className="fas fa-broom text-3xl md:text-4xl text-rose-800 mb-1"></i>
-              <span className="text-[10px] md:text-xs font-black text-rose-900 uppercase">LIMPIAR ({gameState.powerups.cleaners})</span>
+              <i className={`fas fa-broom text-3xl md:text-4xl mb-1 ${showKonamiEffect ? 'text-rose-200' : 'text-rose-800'}`}></i>
+              <span className={`text-[10px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : 'text-rose-900'}`}>LIMPIAR ({gameState.powerups.cleaners})</span>
             </button>
 
             <div className={`w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all
-                ${gameState.powerups.shields > 0 ? 'bg-lime-300 border-lime-500 ring-4 ring-lime-400/50' : 'bg-slate-200 border-slate-300 opacity-50'}
+                ${gameState.powerups.shields > 0 ? (showKonamiEffect ? 'bg-lime-600 border-lime-800 ring-4 ring-lime-400/20' : 'bg-lime-300 border-lime-500 ring-4 ring-lime-400/50') : 'bg-slate-700 border-slate-800 opacity-50'}
               `}
             >
-              <i className="fas fa-shield-alt text-3xl md:text-4xl text-lime-800 mb-1"></i>
-              <span className="text-[10px] md:text-xs font-black text-lime-900 uppercase">ESCUDO ({gameState.powerups.shields})</span>
+              <i className={`fas fa-shield-alt text-3xl md:text-4xl mb-1 ${showKonamiEffect ? 'text-lime-200' : 'text-lime-800'}`}></i>
+              <span className={`text-[10px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : 'text-lime-900'}`}>ESCUDO ({gameState.powerups.shields})</span>
             </div>
             
             <button 
               onClick={() => setView(GameView.MENU)}
-              className="w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 bg-white border-slate-300 transition-all hover:bg-slate-50 active:scale-95"
+              className={`w-24 h-24 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[2rem] shadow-xl border-b-8 transition-all active:scale-95 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}
             >
               <i className="fas fa-home text-3xl md:text-4xl text-indigo-400 mb-1"></i>
-              <span className="text-[10px] md:text-xs font-black text-indigo-900 uppercase">SALIR</span>
+              <span className={`text-[10px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>SALIR</span>
             </button>
           </div>
         </div>
       )}
 
       {view === GameView.GAME_OVER && (
-        <div className="text-center bg-white p-12 md:p-16 rounded-[4rem] shadow-2xl border-x-8 border-b-8 border-rose-500 animate-in zoom-in duration-300 w-full max-w-md mx-4">
+        <div className={`text-center p-12 md:p-16 rounded-[4rem] shadow-2xl border-x-8 border-b-8 border-rose-500 animate-in zoom-in duration-300 w-full max-w-lg mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
           <i className="fas fa-skull text-8xl text-rose-500 mb-6 block"></i>
-          <h2 className="text-6xl md:text-7xl font-black text-slate-900 italic tracking-tighter mb-4">GAME OVER</h2>
-          <div className="mb-8">
+          <h2 className={`text-6xl md:text-7xl font-black italic tracking-tighter mb-4 ${showKonamiEffect ? 'text-white' : 'text-slate-900'}`}>GAME OVER</h2>
+          <div className="mb-8 p-6 bg-indigo-50 rounded-3xl border-2 border-indigo-100 flex flex-col items-center">
             <span className="block text-sm font-bold text-slate-400 uppercase tracking-widest">Puntuación Final</span>
-            <span className="text-5xl font-black text-indigo-600">{gameState.score}</span>
+            <span className="text-6xl font-black text-indigo-600 mb-4">{gameState.score}</span>
+            
+            {gameState.score > 0 && !scoreSaved && (
+              <div className="w-full flex flex-col items-center space-y-4 animate-in slide-in-from-bottom duration-500">
+                <input 
+                  type="text" 
+                  value={playerName} 
+                  onChange={(e) => setPlayerName(e.target.value.substring(0, 15))} 
+                  placeholder="Tu nombre aquí..."
+                  className="w-full p-4 rounded-xl border-2 border-indigo-200 outline-none focus:border-indigo-500 font-bold text-center"
+                />
+                <button 
+                  onClick={handleSaveScore}
+                  disabled={!playerName.trim() || isSavingScore}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {isSavingScore ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-trophy mr-2"></i>}
+                  GUARDAR PUNTUACIÓN
+                </button>
+              </div>
+            )}
+            {scoreSaved && (
+              <div className="text-green-500 font-black flex items-center animate-in zoom-in">
+                <i className="fas fa-check-circle mr-2"></i> REGISTRADO CORRECTAMENTE
+              </div>
+            )}
           </div>
-          <p className="text-xl font-bold text-slate-400 mb-10 italic">¡No te rindas, vuelve a intentarlo!</p>
+          
           <button onClick={() => setView(GameView.MENU)} className="w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl text-3xl font-black shadow-lg transition-all active:scale-95">MENÚ PRINCIPAL</button>
         </div>
       )}
 
       {view === GameView.ACHIEVEMENTS && <AchievementsModal achievements={achievements} onClose={() => setView(GameView.MENU)} />}
+      {view === GameView.LEADERBOARD && <Leaderboard isMidnight={showKonamiEffect} onClose={() => setView(GameView.MENU)} />}
       {view === GameView.EDITOR && (
         <Editor onClose={() => setView(GameView.MENU)} onSave={(newLevel) => {
           setLevels(prev => [newLevel, ...prev]);

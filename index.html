@@ -13,10 +13,34 @@
             background: #f0f4f8;
             overflow-x: hidden;
             user-select: none;
+            transition: background-color 0.8s ease;
         }
+        
+        /* Efecto Konami: Modo Midnight */
         .konami-active {
-            filter: hue-rotate(180deg) brightness(1.1) contrast(1.1);
+            background-color: #020617 !important;
         }
+        
+        .konami-active .bg-white {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+        
+        .konami-active .text-indigo-900, 
+        .konami-active .text-slate-800,
+        .konami-active .text-slate-900 {
+            color: #f1f5f9 !important;
+        }
+
+        .konami-active .bg-indigo-50 {
+            background-color: #1e293b !important;
+        }
+
+        .konami-active .border-indigo-100 {
+            border-color: #334155 !important;
+        }
+
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
@@ -31,6 +55,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(99, 102, 241, 0.8);
         }
+        
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -38,6 +63,15 @@
         }
         .floating {
             animation: float 3s ease-in-out infinite;
+        }
+
+        /* Animación de entrada para el modo secreto */
+        .konami-unlock-flash {
+            animation: flash 0.5s ease-out;
+        }
+        @keyframes flash {
+            0% { filter: brightness(3); }
+            100% { filter: brightness(1); }
         }
     </style>
     <script type="importmap">

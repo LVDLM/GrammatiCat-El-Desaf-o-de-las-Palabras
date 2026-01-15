@@ -1,9 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Level } from '../types';
+import { Level, LeaderboardEntry } from '../types';
 
-// Asumimos que las variables están disponibles en el entorno.
-// Si no están configuradas, el servicio fallará silenciosamente o usará localStorage.
 const supabaseUrl = (process.env as any).SUPABASE_URL || '';
 const supabaseKey = (process.env as any).SUPABASE_ANON_KEY || '';
 
@@ -48,4 +46,31 @@ export const fetchCommunityLevels = async (): Promise<Level[]> => {
     words: d.words,
     timeLimit: d.time_limit
   }));
+};
+
+export const saveScore = async (entry: LeaderboardEntry) => {
+  if (!supabase) return { error: 'Supabase no configurado' };
+  
+  const { data, error } = await supabase
+    .from('leaderboard')
+    .insert([entry]);
+    
+  return { data, error };
+};
+
+export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+  if (!supabase) return [];
+  
+  const { data, error } = await supabase
+    .from('leaderboard')
+    .select('*')
+    .order('score', { ascending: false })
+    .limit(10);
+    
+  if (error) {
+    console.error("Error fetching leaderboard:", error);
+    return [];
+  }
+  
+  return data;
 };

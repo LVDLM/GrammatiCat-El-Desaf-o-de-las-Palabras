@@ -36,6 +36,13 @@ export interface Achievement {
   goal?: number;
 }
 
+export interface LeaderboardEntry {
+  id?: string;
+  name: string;
+  score: number;
+  created_at?: string;
+}
+
 export interface GameState {
   score: number;
   lives: number;
@@ -62,5 +69,6 @@ export enum GameView {
   PLAYING = 'PLAYING',
   EDITOR = 'EDITOR',
   GAME_OVER = 'GAME_OVER',
-  ACHIEVEMENTS = 'ACHIEVEMENTS'
+  ACHIEVEMENTS = 'ACHIEVEMENTS',
+  LEADERBOARD = 'LEADERBOARD'
 }

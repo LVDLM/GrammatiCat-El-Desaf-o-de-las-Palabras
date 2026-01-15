@@ -7,7 +7,9 @@ export const analyzeTextWithAI = async (text: string) => {
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Analiza el siguiente texto en español y clasifica cada palabra según su clase gramatical (Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante). Ignora signos de puntuación.
+    contents: `Analiza el siguiente texto en español y clasifica cada palabra según su clase gramatical (Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante). 
+    
+    IMPORTANTE: Mantén los signos de puntuación (puntos, comas, etc.) pegados a la palabra que los precede, tal como aparecen en el texto original. No omitas ninguna palabra del texto.
     
     Texto: "${text}"`,
     config: {
@@ -17,7 +19,10 @@ export const analyzeTextWithAI = async (text: string) => {
         items: {
           type: Type.OBJECT,
           properties: {
-            text: { type: Type.STRING },
+            text: { 
+              type: Type.STRING,
+              description: "La palabra junto con cualquier signo de puntuación adyacente (ej: 'casa,' o 'final.')"
+            },
             category: { 
               type: Type.STRING,
               description: "Una de: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, Determinante"
