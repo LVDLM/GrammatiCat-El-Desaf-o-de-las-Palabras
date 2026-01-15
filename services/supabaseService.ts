@@ -11,26 +11,44 @@ export const addLog = (msg: string, isError: boolean = false) => {
 };
 
 /**
- * Acceso directo a variables. 
- * Vercel inyecta estas variables durante la compilación si tienen el prefijo NEXT_PUBLIC_
+ * IMPORTANTE: Para que Vercel inyecte estas variables en el navegador,
+ * la referencia debe ser estática y con el prefijo NEXT_PUBLIC_.
  */
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 
-                    (process.env as any).SUPABASE_URL || 
-                    '';
+const getSupabaseConfig = () => {
+  // 1. Intento estático (Lo más fiable en Vercel/Vite)
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  let key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                    (process.env as any).SUPABASE_ANON_KEY || 
-                    '';
+  // 2. Intento vía import.meta.env (Para entornos ESM/Vite modernos)
+  if (!url) {
+    url = (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_URL || 
+          (import.meta as any).env?.VITE_SUPABASE_URL || '';
+  }
+  if (!key) {
+    key = (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+          (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+  }
+
+  // 3. Fallback dinámico
+  if (!url) url = (process.env as any).SUPABASE_URL || '';
+  if (!key) key = (process.env as any).SUPABASE_ANON_KEY || '';
+
+  return { url, key };
+};
+
+const config = getSupabaseConfig();
+const supabaseUrl = config.url;
+const supabaseKey = config.key;
 
 addLog("--- DIAGNÓSTICO DE CONEXIÓN ---");
 if (!supabaseUrl || supabaseUrl === '') {
-  addLog("URL: ⚠️ VACÍA. Revisa NEXT_PUBLIC_SUPABASE_URL en Vercel.", true);
+  addLog("URL: ⚠️ VACÍA. Haz REDEPLOY en Vercel para aplicar cambios.", true);
 } else {
   addLog(`URL: Detectada (${supabaseUrl.substring(0, 15)}...)`);
 }
 
 if (!supabaseKey || supabaseKey === '') {
-  addLog("KEY: ⚠️ VACÍA. Revisa NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.", true);
+  addLog("KEY: ⚠️ VACÍA. Haz REDEPLOY en Vercel para aplicar cambios.", true);
 } else {
   addLog("KEY: Detectada OK");
 }
@@ -40,12 +58,12 @@ export const supabase = (supabaseUrl && supabaseKey)
   : null;
 
 if (supabase) {
-  addLog("✅ Cliente Supabase inicializado.");
+  addLog("✅ Cliente Supabase listo.");
 }
 
 export const saveLevelOnline = async (level: Level) => {
   if (!supabase) {
-    addLog("Error: Supabase no configurado en el cliente.", true);
+    addLog("Error: Supabase no configurado. Revisa variables y despliegue.", true);
     return { error: 'No Config' };
   }
   
@@ -65,11 +83,11 @@ export const saveLevelOnline = async (level: Level) => {
     if (error) {
       addLog(`Error Supabase: ${error.message}`, true);
     } else {
-      addLog("¡Nivel guardado en la nube!");
+      addLog("¡Nivel guardado correctamente!");
     }
     return { data, error };
   } catch (err: any) {
-    addLog(`Excepción: ${err.message}`, true);
+    addLog(`Fallo crítico: ${err.message}`, true);
     return { error: err.message };
   }
 };

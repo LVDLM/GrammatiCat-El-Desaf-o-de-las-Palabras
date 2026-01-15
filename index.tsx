@@ -1,10 +1,12 @@
 
-// El polyfill DEBE ir antes de cualquier otra importación
-const globalWin = window as any;
-if (typeof globalWin.process === 'undefined') {
-  globalWin.process = { env: {} };
-} else if (!globalWin.process.env) {
-  globalWin.process.env = {};
+// Intentamos detectar si process ya existe antes de tocar nada para no romper la inyección de Vercel
+if (typeof window !== 'undefined') {
+  const win = window as any;
+  if (!win.process) {
+    win.process = { env: {} };
+  } else if (!win.process.env) {
+    win.process.env = {};
+  }
 }
 
 import React from 'react';
