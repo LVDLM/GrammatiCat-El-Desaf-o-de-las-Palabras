@@ -35,22 +35,22 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "101-1", text: "Rosa", category: WordClass.SUSTANTIVO },
       { id: "101-2", text: "se", category: WordClass.PRONOMBRE },
       { id: "101-3", text: "casó", category: WordClass.VERBO },
-      { id: "101-4", text: "primero", category: WordClass.ADVERBIO },
-      { id: "101-5", text: "Gertrudis", category: WordClass.SUSTANTIVO },
+      { id: "101-4", text: "primero.", category: WordClass.ADVERBIO },
+      { id: "101-5", text: "Gertrudis,", category: WordClass.SUSTANTIVO },
       { id: "101-6", text: "la", category: WordClass.DETERMINANTE },
       { id: "101-7", text: "hermana", category: WordClass.SUSTANTIVO },
-      { id: "101-8", text: "mayor", category: WordClass.ADJETIVO },
+      { id: "101-8", text: "mayor,", category: WordClass.ADJETIVO },
       { id: "101-9", text: "parecía", category: WordClass.VERBO },
       { id: "101-10", text: "resignada", category: WordClass.ADJETIVO },
       { id: "101-11", text: "a", category: WordClass.PREPOSICION },
       { id: "101-12", text: "quedarse", category: WordClass.VERBO },
       { id: "101-13", text: "para", category: WordClass.PREPOSICION },
       { id: "101-14", text: "vestir", category: WordClass.VERBO },
-      { id: "101-15", text: "imágenes", category: WordClass.SUSTANTIVO },
+      { id: "101-15", text: "imágenes,", category: WordClass.SUSTANTIVO },
       { id: "101-16", text: "como", category: WordClass.CONJUNCION },
       { id: "101-17", text: "decía", category: WordClass.VERBO },
       { id: "101-18", text: "la", category: WordClass.DETERMINANTE },
-      { id: "101-19", text: "gente", category: WordClass.SUSTANTIVO },
+      { id: "101-19", text: "gente.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -67,14 +67,14 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "102-4", text: "soy", category: WordClass.VERBO },
       { id: "102-5", text: "Juan", category: WordClass.SUSTANTIVO },
       { id: "102-6", text: "Pablo", category: WordClass.SUSTANTIVO },
-      { id: "102-7", text: "Castel", category: WordClass.SUSTANTIVO },
+      { id: "102-7", text: "Castel,", category: WordClass.SUSTANTIVO },
       { id: "102-8", text: "el", category: WordClass.DETERMINANTE },
       { id: "102-9", text: "pintor", category: WordClass.SUSTANTIVO },
       { id: "102-10", text: "que", category: WordClass.PRONOMBRE },
       { id: "102-11", text: "mató", category: WordClass.VERBO },
       { id: "102-12", text: "a", category: WordClass.PREPOSICION },
       { id: "102-13", text: "María", category: WordClass.SUSTANTIVO },
-      { id: "102-14", text: "Iribarne", category: WordClass.SUSTANTIVO },
+      { id: "102-14", text: "Iribarne.", category: WordClass.SUSTANTIVO },
       { id: "102-15", text: "Supongo", category: WordClass.VERBO },
       { id: "102-16", text: "que", category: WordClass.CONJUNCION },
       { id: "102-17", text: "el", category: WordClass.DETERMINANTE },
@@ -84,7 +84,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "102-21", text: "el", category: WordClass.DETERMINANTE },
       { id: "102-22", text: "recuerdo", category: WordClass.SUSTANTIVO },
       { id: "102-23", text: "de", category: WordClass.PREPOSICION },
-      { id: "102-24", text: "todos", category: WordClass.PRONOMBRE },
+      { id: "102-24", text: "todos.", category: WordClass.PRONOMBRE },
     ]
   },
   {
@@ -105,16 +105,16 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "103-8", text: "acá", category: WordClass.ADVERBIO },
       { id: "103-9", text: "vivía", category: WordClass.VERBO },
       { id: "103-10", text: "mi", category: WordClass.DETERMINANTE },
-      { id: "103-11", text: "padre", category: WordClass.SUSTANTIVO },
+      { id: "103-11", text: "padre,", category: WordClass.SUSTANTIVO },
       { id: "103-12", text: "un", category: WordClass.DETERMINANTE },
       { id: "103-13", text: "tal", category: WordClass.DETERMINANTE },
       { id: "103-14", text: "Pedro", category: WordClass.SUSTANTIVO },
-      { id: "103-15", text: "Páramo", category: WordClass.SUSTANTIVO },
+      { id: "103-15", text: "Páramo.", category: WordClass.SUSTANTIVO },
       { id: "103-16", text: "Mi", category: WordClass.DETERMINANTE },
       { id: "103-17", text: "madre", category: WordClass.SUSTANTIVO },
       { id: "103-18", text: "me", category: WordClass.PRONOMBRE },
       { id: "103-19", text: "lo", category: WordClass.PRONOMBRE },
-      { id: "103-20", text: "dijo", category: WordClass.VERBO },
+      { id: "103-20", text: "dijo.", category: WordClass.VERBO },
     ]
   },
   {
@@ -134,7 +134,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "104-7", text: "compás", category: WordClass.SUSTANTIVO },
       { id: "104-8", text: "de", category: WordClass.PREPOSICION },
       { id: "104-9", text: "la", category: WordClass.DETERMINANTE },
-      { id: "104-10", text: "vigüela", category: WordClass.SUSTANTIVO },
+      { id: "104-10", text: "vigüela,", category: WordClass.SUSTANTIVO },
       { id: "104-11", text: "que", category: WordClass.CONJUNCION },
       { id: "104-12", text: "el", category: WordClass.DETERMINANTE },
       { id: "104-13", text: "hombre", category: WordClass.SUSTANTIVO },
@@ -143,7 +143,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "104-16", text: "desvela", category: WordClass.VERBO },
       { id: "104-17", text: "una", category: WordClass.DETERMINANTE },
       { id: "104-18", text: "pena", category: WordClass.SUSTANTIVO },
-      { id: "104-19", text: "extraordinaria", category: WordClass.ADJETIVO },
+      { id: "104-19", text: "extraordinaria.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -165,14 +165,14 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "105-9", text: "de", category: WordClass.PREPOSICION },
       { id: "105-10", text: "la", category: WordClass.DETERMINANTE },
       { id: "105-11", text: "margen", category: WordClass.SUSTANTIVO },
-      { id: "105-12", text: "derecha", category: WordClass.ADJETIVO },
+      { id: "105-12", text: "derecha.", category: WordClass.ADJETIVO },
       { id: "105-13", text: "La", category: WordClass.DETERMINANTE },
       { id: "105-14", text: "tripulación", category: WordClass.SUSTANTIVO },
       { id: "105-15", text: "está", category: WordClass.VERBO },
       { id: "105-16", text: "formada", category: WordClass.ADJETIVO },
       { id: "105-17", text: "por", category: WordClass.PREPOSICION },
       { id: "105-18", text: "cuatro", category: WordClass.DETERMINANTE },
-      { id: "105-19", text: "hombres", category: WordClass.SUSTANTIVO },
+      { id: "105-19", text: "hombres.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -190,7 +190,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "106-5", text: "apasionado", category: WordClass.VERBO },
       { id: "106-6", text: "por", category: WordClass.PREPOSICION },
       { id: "106-7", text: "mujer", category: WordClass.SUSTANTIVO },
-      { id: "106-8", text: "alguna", category: WordClass.DETERMINANTE },
+      { id: "106-8", text: "alguna,", category: WordClass.DETERMINANTE },
       { id: "106-9", text: "jugué", category: WordClass.VERBO },
       { id: "106-10", text: "mi", category: WordClass.DETERMINANTE },
       { id: "106-11", text: "corazón", category: WordClass.SUSTANTIVO },
@@ -201,7 +201,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "106-16", text: "lo", category: WordClass.PRONOMBRE },
       { id: "106-17", text: "ganó", category: WordClass.VERBO },
       { id: "106-18", text: "la", category: WordClass.DETERMINANTE },
-      { id: "106-19", text: "Violencia", category: WordClass.SUSTANTIVO },
+      { id: "106-19", text: "Violencia.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -214,7 +214,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
     words: [
       { id: "107-1", text: "A", category: WordClass.PREPOSICION },
       { id: "107-2", text: "Demetrio", category: WordClass.SUSTANTIVO },
-      { id: "107-3", text: "Macías", category: WordClass.SUSTANTIVO },
+      { id: "107-3", text: "Macías,", category: WordClass.SUSTANTIVO },
       { id: "107-4", text: "la", category: WordClass.DETERMINANTE },
       { id: "107-5", text: "revolución", category: WordClass.SUSTANTIVO },
       { id: "107-6", text: "lo", category: WordClass.PRONOMBRE },
@@ -222,12 +222,12 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "107-8", text: "sacado", category: WordClass.VERBO },
       { id: "107-9", text: "de", category: WordClass.PREPOSICION },
       { id: "107-10", text: "su", category: WordClass.DETERMINANTE },
-      { id: "107-11", text: "rancho", category: WordClass.SUSTANTIVO },
+      { id: "107-11", text: "rancho.", category: WordClass.SUSTANTIVO },
       { id: "107-12", text: "Ahora", category: WordClass.ADVERBIO },
       { id: "107-13", text: "regresaba", category: WordClass.VERBO },
       { id: "107-14", text: "como", category: WordClass.CONJUNCION },
       { id: "107-15", text: "general", category: WordClass.SUSTANTIVO },
-      { id: "107-16", text: "victorioso", category: WordClass.ADJETIVO },
+      { id: "107-16", text: "victorioso.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -248,7 +248,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "108-8", text: "las", category: WordClass.DETERMINANTE },
       { id: "108-9", text: "vigas", category: WordClass.SUSTANTIVO },
       { id: "108-10", text: "del", category: WordClass.PREPOSICION },
-      { id: "108-11", text: "techo", category: WordClass.SUSTANTIVO },
+      { id: "108-11", text: "techo.", category: WordClass.SUSTANTIVO },
       { id: "108-12", text: "El", category: WordClass.DETERMINANTE },
       { id: "108-13", text: "incendio", category: WordClass.SUSTANTIVO },
       { id: "108-14", text: "había", category: WordClass.VERBO },
@@ -256,7 +256,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "108-16", text: "en", category: WordClass.PREPOSICION },
       { id: "108-17", text: "la", category: WordClass.DETERMINANTE },
       { id: "108-18", text: "cocina", category: WordClass.SUSTANTIVO },
-      { id: "108-19", text: "principal", category: WordClass.ADJETIVO },
+      { id: "108-19", text: "principal.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -274,15 +274,15 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "109-5", text: "oscura", category: WordClass.ADJETIVO },
       { id: "109-6", text: "corriente", category: WordClass.SUSTANTIVO },
       { id: "109-7", text: "del", category: WordClass.PREPOSICION },
-      { id: "109-8", text: "río", category: WordClass.SUSTANTIVO },
+      { id: "109-8", text: "río.", category: WordClass.SUSTANTIVO },
       { id: "109-9", text: "Los", category: WordClass.DETERMINANTE },
       { id: "109-10", text: "guardias", category: WordClass.SUSTANTIVO },
       { id: "109-11", text: "están", category: WordClass.VERBO },
       { id: "109-12", text: "tendidos", category: WordClass.ADJETIVO },
       { id: "109-13", text: "bajo", category: WordClass.PREPOSICION },
       { id: "109-14", text: "el", category: WordClass.DETERMINANTE },
-      { id: "109-15", text: "poncho", category: WordClass.SUSTANTIVO },
-      { id: "109-16", text: "durmiendo", category: WordClass.VERBO },
+      { id: "109-15", text: "poncho,", category: WordClass.SUSTANTIVO },
+      { id: "109-16", text: "durmiendo.", category: WordClass.VERBO },
     ]
   },
   {
@@ -301,12 +301,12 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "110-6", text: "que", category: WordClass.CONJUNCION },
       { id: "110-7", text: "andábamos", category: WordClass.VERBO },
       { id: "110-8", text: "para", category: WordClass.PREPOSICION },
-      { id: "110-9", text: "encontrarnos", category: WordClass.VERBO },
+      { id: "110-9", text: "encontrarnos.", category: WordClass.VERBO },
       { id: "110-10", text: "Maga", category: WordClass.SUSTANTIVO },
       { id: "110-11", text: "reía", category: WordClass.VERBO },
       { id: "110-12", text: "de", category: WordClass.PREPOSICION },
       { id: "110-13", text: "mis", category: WordClass.DETERMINANTE },
-      { id: "110-14", text: "explicaciones", category: WordClass.SUSTANTIVO },
+      { id: "110-14", text: "explicaciones.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -323,7 +323,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "111-4", text: "se", category: WordClass.PRONOMBRE },
       { id: "111-5", text: "oyeron", category: WordClass.VERBO },
       { id: "111-6", text: "las", category: WordClass.DETERMINANTE },
-      { id: "111-7", text: "campanadas", category: WordClass.SUSTANTIVO },
+      { id: "111-7", text: "campanadas.", category: WordClass.SUSTANTIVO },
       { id: "111-8", text: "Nadie", category: WordClass.PRONOMBRE },
       { id: "111-9", text: "sabía", category: WordClass.VERBO },
       { id: "111-10", text: "de", category: WordClass.PREPOSICION },
@@ -333,7 +333,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "111-14", text: "sonido", category: WordClass.SUSTANTIVO },
       { id: "111-15", text: "metálico", category: WordClass.ADJETIVO },
       { id: "111-16", text: "y", category: WordClass.CONJUNCION },
-      { id: "111-17", text: "persistente", category: WordClass.ADJETIVO },
+      { id: "111-17", text: "persistente.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -360,27 +360,27 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "112-14", text: "donde", category: WordClass.ADVERBIO },
       { id: "112-15", text: "transcurrió", category: WordClass.VERBO },
       { id: "112-16", text: "mi", category: WordClass.DETERMINANTE },
-      { id: "112-17", text: "adolescencia", category: WordClass.SUSTANTIVO },
+      { id: "112-17", text: "adolescencia.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
     id: 113,
     title: "Sobre héroes y tumbas - Sábato (Argentina)",
     categoryGroup: 'Literatura en español',
-    text: "Cuando volvió en sí se encontró rodeado de rostros ansiosos. Alguien le ofrecía un vaso de agua fría.",
+    text: "Cuando volvió en sí, se encontró rodeado de rostros ansiosos. Alguien le ofrecía un vaso de agua fría.",
     targetCategory: WordClass.PREPOSICION,
     timeLimit: 35,
     words: [
       { id: "113-1", text: "Cuando", category: WordClass.CONJUNCION },
       { id: "113-2", text: "volvió", category: WordClass.VERBO },
       { id: "113-3", text: "en", category: WordClass.PREPOSICION },
-      { id: "113-4", text: "sí", category: WordClass.PRONOMBRE },
+      { id: "113-4", text: "sí,", category: WordClass.PRONOMBRE },
       { id: "113-5", text: "se", category: WordClass.PRONOMBRE },
       { id: "113-6", text: "encontró", category: WordClass.VERBO },
       { id: "113-7", text: "rodeado", category: WordClass.ADJETIVO },
       { id: "113-8", text: "de", category: WordClass.PREPOSICION },
       { id: "113-9", text: "rostros", category: WordClass.SUSTANTIVO },
-      { id: "113-10", text: "ansiosos", category: WordClass.ADJETIVO },
+      { id: "113-10", text: "ansiosos.", category: WordClass.ADJETIVO },
       { id: "113-11", text: "Alguien", category: WordClass.PRONOMBRE },
       { id: "113-12", text: "le", category: WordClass.PRONOMBRE },
       { id: "113-13", text: "ofrecía", category: WordClass.VERBO },
@@ -388,7 +388,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "113-15", text: "vaso", category: WordClass.SUSTANTIVO },
       { id: "113-16", text: "de", category: WordClass.PREPOSICION },
       { id: "113-17", text: "agua", category: WordClass.SUSTANTIVO },
-      { id: "113-18", text: "fría", category: WordClass.ADJETIVO },
+      { id: "113-18", text: "fría.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -407,7 +407,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "114-6", text: "amanecer", category: WordClass.SUSTANTIVO },
       { id: "114-7", text: "hasta", category: WordClass.PREPOSICION },
       { id: "114-8", text: "el", category: WordClass.DETERMINANTE },
-      { id: "114-9", text: "anochecer", category: WordClass.SUSTANTIVO },
+      { id: "114-9", text: "anochecer.", category: WordClass.SUSTANTIVO },
       { id: "114-10", text: "Sus", category: WordClass.DETERMINANTE },
       { id: "114-11", text: "manos", category: WordClass.SUSTANTIVO },
       { id: "114-12", text: "callosas", category: WordClass.ADJETIVO },
@@ -417,7 +417,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "114-16", text: "piedras", category: WordClass.SUSTANTIVO },
       { id: "114-17", text: "ásperas", category: WordClass.ADJETIVO },
       { id: "114-18", text: "del", category: WordClass.PREPOSICION },
-      { id: "114-19", text: "camino", category: WordClass.SUSTANTIVO },
+      { id: "114-19", text: "camino.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -436,12 +436,12 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "115-6", text: "momento", category: WordClass.SUSTANTIVO },
       { id: "115-7", text: "para", category: WordClass.PREPOSICION },
       { id: "115-8", text: "adquirir", category: WordClass.VERBO },
-      { id: "115-9", text: "billetes", category: WordClass.SUSTANTIVO },
+      { id: "115-9", text: "billetes,", category: WordClass.SUSTANTIVO },
       { id: "115-10", text: "llegué", category: WordClass.VERBO },
       { id: "115-11", text: "a", category: WordClass.PREPOSICION },
       { id: "115-12", text: "Barcelona", category: WordClass.SUSTANTIVO },
       { id: "115-13", text: "a", category: WordClass.PREPOSICION },
-      { id: "115-14", text: "medianoche", category: WordClass.SUSTANTIVO },
+      { id: "115-14", text: "medianoche.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -461,7 +461,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "116-7", text: "que", category: WordClass.CONJUNCION },
       { id: "116-8", text: "Beatriz", category: WordClass.SUSTANTIVO },
       { id: "116-9", text: "Viterbo", category: WordClass.SUSTANTIVO },
-      { id: "116-10", text: "murió", category: WordClass.VERBO },
+      { id: "116-10", text: "murió,", category: WordClass.VERBO },
       { id: "116-11", text: "después", category: WordClass.ADVERBIO },
       { id: "116-12", text: "de", category: WordClass.PREPOSICION },
       { id: "116-13", text: "una", category: WordClass.DETERMINANTE },
@@ -473,7 +473,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "116-19", text: "rebajó", category: WordClass.VERBO },
       { id: "116-20", text: "un", category: WordClass.DETERMINANTE },
       { id: "116-21", text: "solo", category: WordClass.ADJETIVO },
-      { id: "116-22", text: "instante", category: WordClass.SUSTANTIVO },
+      { id: "116-22", text: "instante.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -490,19 +490,19 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "117-4", text: "el", category: WordClass.DETERMINANTE },
       { id: "117-5", text: "pueblecito", category: WordClass.SUSTANTIVO },
       { id: "117-6", text: "de", category: WordClass.PREPOSICION },
-      { id: "117-7", text: "Chimalistac", category: WordClass.SUSTANTIVO },
+      { id: "117-7", text: "Chimalistac,", category: WordClass.SUSTANTIVO },
       { id: "117-8", text: "allá", category: WordClass.ADVERBIO },
       { id: "117-9", text: "por", category: WordClass.PREPOSICION },
       { id: "117-10", text: "los", category: WordClass.DETERMINANTE },
       { id: "117-11", text: "rumbos", category: WordClass.SUSTANTIVO },
       { id: "117-12", text: "de", category: WordClass.PREPOSICION },
       { id: "117-13", text: "San", category: WordClass.SUSTANTIVO },
-      { id: "117-14", text: "Ángel", category: WordClass.SUSTANTIVO },
+      { id: "117-14", text: "Ángel.", category: WordClass.SUSTANTIVO },
       { id: "117-15", text: "Era", category: WordClass.VERBO },
       { id: "117-16", text: "hija", category: WordClass.SUSTANTIVO },
       { id: "117-17", text: "de", category: WordClass.PREPOSICION },
       { id: "117-18", text: "labradores", category: WordClass.SUSTANTIVO },
-      { id: "117-19", text: "honrados", category: WordClass.ADJETIVO },
+      { id: "117-19", text: "honrados.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -518,21 +518,21 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "118-3", text: "puerta", category: WordClass.SUSTANTIVO },
       { id: "118-4", text: "de", category: WordClass.PREPOSICION },
       { id: "118-5", text: "La", category: WordClass.DETERMINANTE },
-      { id: "118-6", text: "Crónica", category: WordClass.SUSTANTIVO },
+      { id: "118-6", text: "Crónica,", category: WordClass.SUSTANTIVO },
       { id: "118-7", text: "Santiago", category: WordClass.SUSTANTIVO },
       { id: "118-8", text: "mira", category: WordClass.VERBO },
       { id: "118-9", text: "la", category: WordClass.DETERMINANTE },
       { id: "118-10", text: "avenida", category: WordClass.SUSTANTIVO },
       { id: "118-11", text: "Tacna", category: WordClass.SUSTANTIVO },
       { id: "118-12", text: "sin", category: WordClass.PREPOSICION },
-      { id: "118-13", text: "amor", category: WordClass.SUSTANTIVO },
+      { id: "118-13", text: "amor.", category: WordClass.SUSTANTIVO },
       { id: "118-14", text: "Los", category: WordClass.DETERMINANTE },
-      { id: "118-15", text: "autos", category: WordClass.SUSTANTIVO },
+      { id: "118-15", text: "autos,", category: WordClass.SUSTANTIVO },
       { id: "118-16", text: "los", category: WordClass.DETERMINANTE },
       { id: "118-17", text: "edificios", category: WordClass.SUSTANTIVO },
       { id: "118-18", text: "desiguales", category: WordClass.ADJETIVO },
       { id: "118-19", text: "y", category: WordClass.CONJUNCION },
-      { id: "118-20", text: "descoloridos", category: WordClass.ADJETIVO },
+      { id: "118-20", text: "descoloridos.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -551,20 +551,20 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "119-6", text: "ya", category: WordClass.ADVERBIO },
       { id: "119-7", text: "son", category: WordClass.VERBO },
       { id: "119-8", text: "mi", category: WordClass.DETERMINANTE },
-      { id: "119-9", text: "entraña", category: WordClass.SUSTANTIVO },
+      { id: "119-9", text: "entraña.", category: WordClass.SUSTANTIVO },
       { id: "119-10", text: "No", category: WordClass.ADVERBIO },
       { id: "119-11", text: "las", category: WordClass.DETERMINANTE },
       { id: "119-12", text: "ávidas", category: WordClass.ADJETIVO },
       { id: "119-13", text: "calles", category: WordClass.SUSTANTIVO },
       { id: "119-14", text: "incómodas", category: WordClass.ADJETIVO },
       { id: "119-15", text: "del", category: WordClass.PREPOSICION },
-      { id: "119-16", text: "trajín", category: WordClass.SUSTANTIVO },
+      { id: "119-16", text: "trajín,", category: WordClass.SUSTANTIVO },
       { id: "119-17", text: "sino", category: WordClass.CONJUNCION },
       { id: "119-18", text: "las", category: WordClass.DETERMINANTE },
       { id: "119-19", text: "calles", category: WordClass.SUSTANTIVO },
       { id: "119-20", text: "desganadas", category: WordClass.ADJETIVO },
       { id: "119-21", text: "del", category: WordClass.PREPOSICION },
-      { id: "119-22", text: "barrio", category: WordClass.SUSTANTIVO },
+      { id: "119-22", text: "barrio.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -579,7 +579,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "120-2", text: "habían", category: WordClass.VERBO },
       { id: "120-3", text: "dado", category: WordClass.VERBO },
       { id: "120-4", text: "la", category: WordClass.DETERMINANTE },
-      { id: "120-5", text: "tierra", category: WordClass.SUSTANTIVO },
+      { id: "120-5", text: "tierra.", category: WordClass.SUSTANTIVO },
       { id: "120-6", text: "Y", category: WordClass.CONJUNCION },
       { id: "120-7", text: "nos", category: WordClass.PRONOMBRE },
       { id: "120-8", text: "la", category: WordClass.PRONOMBRE },
@@ -613,7 +613,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "121-8", text: "el", category: WordClass.DETERMINANTE },
       { id: "121-9", text: "sol", category: WordClass.SUSTANTIVO },
       { id: "121-10", text: "estaba", category: WordClass.VERBO },
-      { id: "121-11", text: "alto", category: WordClass.ADJETIVO },
+      { id: "121-11", text: "alto.", category: WordClass.ADJETIVO },
       { id: "121-12", text: "Traía", category: WordClass.VERBO },
       { id: "121-13", text: "noticias", category: WordClass.SUSTANTIVO },
       { id: "121-14", text: "de", category: WordClass.PREPOSICION },
@@ -622,7 +622,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "121-17", text: "que", category: WordClass.PRONOMBRE },
       { id: "121-18", text: "trabajaban", category: WordClass.VERBO },
       { id: "121-19", text: "río", category: WordClass.SUSTANTIVO },
-      { id: "121-20", text: "arriba", category: WordClass.ADVERBIO },
+      { id: "121-20", text: "arriba.", category: WordClass.ADVERBIO },
     ]
   },
   {
@@ -642,7 +642,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "122-7", text: "desde", category: WordClass.PREPOSICION },
       { id: "122-8", text: "hace", category: WordClass.VERBO },
       { id: "122-9", text: "tiempo", category: WordClass.SUSTANTIVO },
-      { id: "122-10", text: "inmemorial", category: WordClass.ADJETIVO },
+      { id: "122-10", text: "inmemorial.", category: WordClass.ADJETIVO },
       { id: "122-11", text: "Allí", category: WordClass.ADVERBIO },
       { id: "122-12", text: "nacieron", category: WordClass.VERBO },
       { id: "122-13", text: "y", category: WordClass.CONJUNCION },
@@ -651,7 +651,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "122-16", text: "generaciones", category: WordClass.SUSTANTIVO },
       { id: "122-17", text: "de", category: WordClass.PREPOSICION },
       { id: "122-18", text: "indios", category: WordClass.SUSTANTIVO },
-      { id: "122-19", text: "laboriosos", category: WordClass.ADJETIVO },
+      { id: "122-19", text: "laboriosos.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -663,7 +663,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
     timeLimit: 35,
     words: [
       { id: "123-1", text: "Infundía", category: WordClass.VERBO },
-      { id: "123-2", text: "respeto", category: WordClass.SUSTANTIVO },
+      { id: "123-2", text: "respeto,", category: WordClass.SUSTANTIVO },
       { id: "123-3", text: "a", category: WordClass.PREPOSICION },
       { id: "123-4", text: "pesar", category: WordClass.SUSTANTIVO },
       { id: "123-5", text: "de", category: WordClass.PREPOSICION },
@@ -671,7 +671,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "123-7", text: "anticuada", category: WordClass.ADJETIVO },
       { id: "123-8", text: "y", category: WordClass.CONJUNCION },
       { id: "123-9", text: "sucia", category: WordClass.ADJETIVO },
-      { id: "123-10", text: "apariencia", category: WordClass.SUSTANTIVO },
+      { id: "123-10", text: "apariencia.", category: WordClass.SUSTANTIVO },
       { id: "123-11", text: "Las", category: WordClass.DETERMINANTE },
       { id: "123-12", text: "personas", category: WordClass.SUSTANTIVO },
       { id: "123-13", text: "principales", category: WordClass.ADJETIVO },
@@ -679,7 +679,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "123-15", text: "Cuzco", category: WordClass.SUSTANTIVO },
       { id: "123-16", text: "lo", category: WordClass.PRONOMBRE },
       { id: "123-17", text: "saludaban", category: WordClass.VERBO },
-      { id: "123-18", text: "seriamente", category: WordClass.ADVERBIO },
+      { id: "123-18", text: "seriamente.", category: WordClass.ADVERBIO },
     ]
   },
   {
@@ -700,7 +700,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "124-8", text: "las", category: WordClass.DETERMINANTE },
       { id: "124-9", text: "mesas", category: WordClass.SUSTANTIVO },
       { id: "124-10", text: "del", category: WordClass.PREPOSICION },
-      { id: "124-11", text: "café", category: WordClass.SUSTANTIVO },
+      { id: "124-11", text: "café,", category: WordClass.SUSTANTIVO },
       { id: "124-12", text: "tropezando", category: WordClass.VERBO },
       { id: "124-13", text: "con", category: WordClass.PREPOSICION },
       { id: "124-14", text: "los", category: WordClass.DETERMINANTE },
@@ -709,7 +709,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "124-17", text: "beben", category: WordClass.VERBO },
       { id: "124-18", text: "su", category: WordClass.DETERMINANTE },
       { id: "124-19", text: "chocolate", category: WordClass.SUSTANTIVO },
-      { id: "124-20", text: "espeso", category: WordClass.ADJETIVO },
+      { id: "124-20", text: "espeso.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -731,7 +731,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "125-9", text: "nombre", category: WordClass.SUSTANTIVO },
       { id: "125-10", text: "no", category: WordClass.ADVERBIO },
       { id: "125-11", text: "quiero", category: WordClass.VERBO },
-      { id: "125-12", text: "acordarme", category: WordClass.VERBO },
+      { id: "125-12", text: "acordarme.", category: WordClass.VERBO },
     ]
   },
   {
@@ -753,7 +753,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "126-9", text: "dueña", category: WordClass.SUSTANTIVO },
       { id: "126-10", text: "tal", category: WordClass.ADVERBIO },
       { id: "126-11", text: "vez", category: WordClass.SUSTANTIVO },
-      { id: "126-12", text: "olvidada", category: WordClass.ADJETIVO },
+      { id: "126-12", text: "olvidada.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -771,7 +771,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "127-5", text: "he", category: WordClass.VERBO },
       { id: "127-6", text: "abierto", category: WordClass.VERBO },
       { id: "127-7", text: "muchas", category: WordClass.DETERMINANTE },
-      { id: "127-8", text: "veredas", category: WordClass.SUSTANTIVO },
+      { id: "127-8", text: "veredas.", category: WordClass.SUSTANTIVO },
     ]
   }
 ];
@@ -791,13 +791,13 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "201-4", text: "mayores", category: WordClass.ADJETIVO },
       { id: "201-5", text: "fueron", category: WordClass.VERBO },
       { id: "201-6", text: "primero", category: WordClass.ADVERBIO },
-      { id: "201-7", text: "niños", category: WordClass.SUSTANTIVO },
+      { id: "201-7", text: "niños,", category: WordClass.SUSTANTIVO },
       { id: "201-8", text: "aunque", category: WordClass.CONJUNCION },
       { id: "201-9", text: "pocas", category: WordClass.DETERMINANTE },
       { id: "201-10", text: "de", category: WordClass.PREPOSICION },
       { id: "201-11", text: "ellas", category: WordClass.PRONOMBRE },
       { id: "201-12", text: "lo", category: WordClass.PRONOMBRE },
-      { id: "201-13", text: "recuerden", category: WordClass.VERBO },
+      { id: "201-13", text: "recuerden.", category: WordClass.VERBO },
     ]
   },
   {
@@ -815,13 +815,13 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "202-5", text: "y", category: WordClass.CONJUNCION },
       { id: "202-6", text: "frío", category: WordClass.ADJETIVO },
       { id: "202-7", text: "de", category: WordClass.PREPOSICION },
-      { id: "202-8", text: "abril", category: WordClass.SUSTANTIVO },
+      { id: "202-8", text: "abril,", category: WordClass.SUSTANTIVO },
       { id: "202-9", text: "y", category: WordClass.CONJUNCION },
       { id: "202-10", text: "los", category: WordClass.DETERMINANTE },
       { id: "202-11", text: "relojes", category: WordClass.SUSTANTIVO },
       { id: "202-12", text: "daban", category: WordClass.VERBO },
       { id: "202-13", text: "las", category: WordClass.DETERMINANTE },
-      { id: "202-14", text: "trece", category: WordClass.DETERMINANTE },
+      { id: "202-14", text: "trece.", category: WordClass.DETERMINANTE },
     ]
   },
   {
@@ -835,11 +835,11 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "203-1", text: "Ser", category: WordClass.VERBO },
       { id: "203-2", text: "o", category: WordClass.CONJUNCION },
       { id: "203-3", text: "no", category: WordClass.ADVERBIO },
-      { id: "203-4", text: "ser", category: WordClass.VERBO },
+      { id: "203-4", text: "ser,", category: WordClass.VERBO },
       { id: "203-5", text: "esa", category: WordClass.PRONOMBRE },
       { id: "203-6", text: "es", category: WordClass.VERBO },
       { id: "203-7", text: "la", category: WordClass.DETERMINANTE },
-      { id: "203-8", text: "cuestión", category: WordClass.SUSTANTIVO },
+      { id: "203-8", text: "cuestión.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -860,7 +860,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "204-8", text: "fuego", category: WordClass.SUSTANTIVO },
       { id: "204-9", text: "suficientemente", category: WordClass.ADVERBIO },
       { id: "204-10", text: "sin", category: WordClass.PREPOSICION },
-      { id: "204-11", text: "aliento", category: WordClass.SUSTANTIVO },
+      { id: "204-11", text: "aliento,", category: WordClass.SUSTANTIVO },
       { id: "204-12", text: "pero", category: WordClass.CONJUNCION },
       { id: "204-13", text: "salvo", category: WordClass.PREPOSICION },
       { id: "204-14", text: "el", category: WordClass.DETERMINANTE },
@@ -869,7 +869,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "204-17", text: "de", category: WordClass.PREPOSICION },
       { id: "204-18", text: "que", category: WordClass.CONJUNCION },
       { id: "204-19", text: "era", category: WordClass.VERBO },
-      { id: "204-20", text: "espantosa", category: WordClass.ADJETIVO },
+      { id: "204-20", text: "espantosa,", category: WordClass.ADJETIVO },
       { id: "204-21", text: "nadie", category: WordClass.PRONOMBRE },
       { id: "204-22", text: "habló", category: WordClass.VERBO },
       { id: "204-23", text: "hasta", category: WordClass.PREPOSICION },
@@ -877,7 +877,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "204-25", text: "nos", category: WordClass.PRONOMBRE },
       { id: "204-26", text: "pusimos", category: WordClass.VERBO },
       { id: "204-27", text: "de", category: WordClass.PREPOSICION },
-      { id: "204-28", text: "pie", category: WordClass.SUSTANTIVO },
+      { id: "204-28", text: "pie.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -902,7 +902,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "205-12", text: "de", category: WordClass.PREPOSICION },
       { id: "205-13", text: "fortuna", category: WordClass.SUSTANTIVO },
       { id: "205-14", text: "necesita", category: WordClass.VERBO },
-      { id: "205-15", text: "esposa", category: WordClass.SUSTANTIVO },
+      { id: "205-15", text: "esposa.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -914,7 +914,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
     timeLimit: 15,
     words: [
       { id: "206-1", text: "Llamadme", category: WordClass.VERBO },
-      { id: "206-2", text: "Ismael", category: WordClass.SUSTANTIVO },
+      { id: "206-2", text: "Ismael.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -926,11 +926,11 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
     timeLimit: 35,
     words: [
       { id: "207-1", text: "Una", category: WordClass.DETERMINANTE },
-      { id: "207-2", text: "mañana", category: WordClass.SUSTANTIVO },
+      { id: "207-2", text: "mañana,", category: WordClass.SUSTANTIVO },
       { id: "207-3", text: "tras", category: WordClass.PREPOSICION },
       { id: "207-4", text: "un", category: WordClass.DETERMINANTE },
       { id: "207-5", text: "sueño", category: WordClass.SUSTANTIVO },
-      { id: "207-6", text: "intranquilo", category: WordClass.ADJETIVO },
+      { id: "207-6", text: "intranquilo,", category: WordClass.ADJETIVO },
       { id: "207-7", text: "Gregorio", category: WordClass.SUSTANTIVO },
       { id: "207-8", text: "Samsa", category: WordClass.SUSTANTIVO },
       { id: "207-9", text: "se", category: WordClass.PRONOMBRE },
@@ -939,7 +939,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "207-12", text: "en", category: WordClass.PREPOSICION },
       { id: "207-13", text: "un", category: WordClass.DETERMINANTE },
       { id: "207-14", text: "monstruoso", category: WordClass.ADJETIVO },
-      { id: "207-15", text: "insecto", category: WordClass.SUSTANTIVO },
+      { id: "207-15", text: "insecto.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -955,7 +955,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "208-3", text: "tiempo", category: WordClass.SUSTANTIVO },
       { id: "208-4", text: "me", category: WordClass.PRONOMBRE },
       { id: "208-5", text: "acosté", category: WordClass.VERBO },
-      { id: "208-6", text: "temprano", category: WordClass.ADVERBIO },
+      { id: "208-6", text: "temprano.", category: WordClass.ADVERBIO },
     ]
   },
   {
@@ -970,7 +970,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "209-2", text: "mis", category: WordClass.DETERMINANTE },
       { id: "209-3", text: "años", category: WordClass.SUSTANTIVO },
       { id: "209-4", text: "más", category: WordClass.ADVERBIO },
-      { id: "209-5", text: "vulnerables", category: WordClass.ADJETIVO },
+      { id: "209-5", text: "vulnerables,", category: WordClass.ADJETIVO },
       { id: "209-6", text: "mi", category: WordClass.DETERMINANTE },
       { id: "209-7", text: "padre", category: WordClass.SUSTANTIVO },
       { id: "209-8", text: "me", category: WordClass.PRONOMBRE },
@@ -979,7 +979,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "209-11", text: "consejo", category: WordClass.SUSTANTIVO },
       { id: "209-12", text: "que", category: WordClass.PRONOMBRE },
       { id: "209-13", text: "nunca", category: WordClass.ADVERBIO },
-      { id: "209-14", text: "olvidé", category: WordClass.VERBO },
+      { id: "209-14", text: "olvidé.", category: WordClass.VERBO },
     ]
   },
   {
@@ -1004,7 +1004,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "210-12", text: "sofocantes", category: WordClass.ADJETIVO },
       { id: "210-13", text: "de", category: WordClass.PREPOSICION },
       { id: "210-14", text: "la", category: WordClass.DETERMINANTE },
-      { id: "210-15", text: "ciudad", category: WordClass.SUSTANTIVO },
+      { id: "210-15", text: "ciudad.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1018,13 +1018,13 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "211-1", text: "Hoy", category: WordClass.ADVERBIO },
       { id: "211-2", text: "ha", category: WordClass.VERBO },
       { id: "211-3", text: "muerto", category: WordClass.VERBO },
-      { id: "211-4", text: "mamá", category: WordClass.SUSTANTIVO },
+      { id: "211-4", text: "mamá,", category: WordClass.SUSTANTIVO },
       { id: "211-5", text: "o", category: WordClass.CONJUNCION },
       { id: "211-6", text: "quizás", category: WordClass.ADVERBIO },
-      { id: "211-7", text: "ayer", category: WordClass.ADVERBIO },
+      { id: "211-7", text: "ayer,", category: WordClass.ADVERBIO },
       { id: "211-8", text: "no", category: WordClass.ADVERBIO },
       { id: "211-9", text: "lo", category: WordClass.PRONOMBRE },
-      { id: "211-10", text: "sé", category: WordClass.VERBO },
+      { id: "211-10", text: "sé.", category: WordClass.VERBO },
     ]
   },
   {
@@ -1043,7 +1043,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "212-6", text: "parecen", category: WordClass.VERBO },
       { id: "212-7", text: "unas", category: WordClass.PRONOMBRE },
       { id: "212-8", text: "a", category: WordClass.PREPOSICION },
-      { id: "212-9", text: "otras", category: WordClass.PRONOMBRE },
+      { id: "212-9", text: "otras;", category: WordClass.PRONOMBRE },
       { id: "212-10", text: "cada", category: WordClass.DETERMINANTE },
       { id: "212-11", text: "familia", category: WordClass.SUSTANTIVO },
       { id: "212-12", text: "infeliz", category: WordClass.ADJETIVO },
@@ -1051,7 +1051,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "212-14", text: "es", category: WordClass.VERBO },
       { id: "212-15", text: "a", category: WordClass.PREPOSICION },
       { id: "212-16", text: "su", category: WordClass.DETERMINANTE },
-      { id: "212-17", text: "manera", category: WordClass.SUSTANTIVO },
+      { id: "212-17", text: "manera.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1064,7 +1064,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
     words: [
       { id: "213-1", text: "Majestuoso", category: WordClass.ADJETIVO },
       { id: "213-2", text: "y", category: WordClass.CONJUNCION },
-      { id: "213-3", text: "rollizo", category: WordClass.ADJETIVO },
+      { id: "213-3", text: "rollizo,", category: WordClass.ADJETIVO },
       { id: "213-4", text: "Buck", category: WordClass.SUSTANTIVO },
       { id: "213-5", text: "Mulligan", category: WordClass.SUSTANTIVO },
       { id: "213-6", text: "apareció", category: WordClass.VERBO },
@@ -1073,7 +1073,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "213-9", text: "alto", category: WordClass.ADJETIVO },
       { id: "213-10", text: "de", category: WordClass.PREPOSICION },
       { id: "213-11", text: "la", category: WordClass.DETERMINANTE },
-      { id: "213-12", text: "escalera", category: WordClass.SUSTANTIVO },
+      { id: "213-12", text: "escalera.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1084,15 +1084,15 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
     targetCategory: WordClass.SUSTANTIVO,
     timeLimit: 25,
     words: [
-      { id: "214-1", text: "Cuéntame", category: WordClass.VERBO },
-      { id: "214-2", text: "musa", category: WordClass.SUSTANTIVO },
+      { id: "214-1", text: "Cuéntame,", category: WordClass.VERBO },
+      { id: "214-2", text: "musa,", category: WordClass.SUSTANTIVO },
       { id: "214-3", text: "la", category: WordClass.DETERMINANTE },
       { id: "214-4", text: "historia", category: WordClass.SUSTANTIVO },
       { id: "214-5", text: "del", category: WordClass.PREPOSICION },
       { id: "214-6", text: "hombre", category: WordClass.SUSTANTIVO },
       { id: "214-7", text: "de", category: WordClass.PREPOSICION },
       { id: "214-8", text: "muchos", category: WordClass.DETERMINANTE },
-      { id: "214-9", text: "senderos", category: WordClass.SUSTANTIVO },
+      { id: "214-9", text: "senderos.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1103,15 +1103,15 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
     targetCategory: WordClass.SUSTANTIVO,
     timeLimit: 20,
     words: [
-      { id: "215-1", text: "Lolita", category: WordClass.SUSTANTIVO },
+      { id: "215-1", text: "Lolita,", category: WordClass.SUSTANTIVO },
       { id: "215-2", text: "luz", category: WordClass.SUSTANTIVO },
       { id: "215-3", text: "de", category: WordClass.PREPOSICION },
       { id: "215-4", text: "mi", category: WordClass.DETERMINANTE },
-      { id: "215-5", text: "vida", category: WordClass.SUSTANTIVO },
+      { id: "215-5", text: "vida,", category: WordClass.SUSTANTIVO },
       { id: "215-6", text: "fuego", category: WordClass.SUSTANTIVO },
       { id: "215-7", text: "de", category: WordClass.PREPOSICION },
       { id: "215-8", text: "mis", category: WordClass.DETERMINANTE },
-      { id: "215-9", text: "entrañas", category: WordClass.SUSTANTIVO },
+      { id: "215-9", text: "entrañas.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1128,7 +1128,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "216-4", text: "cuando", category: WordClass.CONJUNCION },
       { id: "216-5", text: "entró", category: WordClass.VERBO },
       { id: "216-6", text: "el", category: WordClass.DETERMINANTE },
-      { id: "216-7", text: "director", category: WordClass.SUSTANTIVO },
+      { id: "216-7", text: "director,", category: WordClass.SUSTANTIVO },
       { id: "216-8", text: "seguido", category: WordClass.VERBO },
       { id: "216-9", text: "de", category: WordClass.PREPOSICION },
       { id: "216-10", text: "un", category: WordClass.DETERMINANTE },
@@ -1136,7 +1136,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "216-12", text: "alumno", category: WordClass.SUSTANTIVO },
       { id: "216-13", text: "vestido", category: WordClass.VERBO },
       { id: "216-14", text: "de", category: WordClass.PREPOSICION },
-      { id: "216-15", text: "paisano", category: WordClass.SUSTANTIVO },
+      { id: "216-15", text: "paisano.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1156,7 +1156,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "217-7", text: "que", category: WordClass.PRONOMBRE },
       { id: "217-8", text: "voy", category: WordClass.VERBO },
       { id: "217-9", text: "a", category: WordClass.PREPOSICION },
-      { id: "217-10", text: "contarles", category: WordClass.VERBO },
+      { id: "217-10", text: "contarles,", category: WordClass.VERBO },
       { id: "217-11", text: "lo", category: WordClass.DETERMINANTE },
       { id: "217-12", text: "primero", category: WordClass.ADJETIVO },
       { id: "217-13", text: "que", category: WordClass.PRONOMBRE },
@@ -1164,7 +1164,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "217-15", text: "saber", category: WordClass.VERBO },
       { id: "217-16", text: "es", category: WordClass.VERBO },
       { id: "217-17", text: "dónde", category: WordClass.ADVERBIO },
-      { id: "217-18", text: "nací", category: WordClass.VERBO },
+      { id: "217-18", text: "nací.", category: WordClass.VERBO },
     ]
   },
   {
@@ -1182,13 +1182,13 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "218-5", text: "tierra", category: WordClass.SUSTANTIVO },
       { id: "218-6", text: "ignorancia", category: WordClass.SUSTANTIVO },
       { id: "218-7", text: "y", category: WordClass.CONJUNCION },
-      { id: "218-8", text: "miseria", category: WordClass.SUSTANTIVO },
+      { id: "218-8", text: "miseria,", category: WordClass.SUSTANTIVO },
       { id: "218-9", text: "libros", category: WordClass.SUSTANTIVO },
       { id: "218-10", text: "como", category: WordClass.CONJUNCION },
       { id: "218-11", text: "este", category: WordClass.DETERMINANTE },
       { id: "218-12", text: "no", category: WordClass.ADVERBIO },
       { id: "218-13", text: "serán", category: WordClass.VERBO },
-      { id: "218-14", text: "inútiles", category: WordClass.ADJETIVO },
+      { id: "218-14", text: "inútiles.", category: WordClass.ADJETIVO },
     ]
   },
   {
@@ -1202,7 +1202,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "219-1", text: "Era", category: WordClass.VERBO },
       { id: "219-2", text: "un", category: WordClass.DETERMINANTE },
       { id: "219-3", text: "placer", category: WordClass.SUSTANTIVO },
-      { id: "219-4", text: "quemar", category: WordClass.VERBO },
+      { id: "219-4", text: "quemar.", category: WordClass.VERBO },
     ]
   },
   {
@@ -1219,7 +1219,7 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "220-4", text: "imposible", category: WordClass.ADJETIVO },
       { id: "220-5", text: "dar", category: WordClass.VERBO },
       { id: "220-6", text: "un", category: WordClass.DETERMINANTE },
-      { id: "220-7", text: "paseo", category: WordClass.SUSTANTIVO },
+      { id: "220-7", text: "paseo.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1243,10 +1243,10 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "221-11", text: "pronto", category: WordClass.ADVERBIO },
       { id: "221-12", text: "celebraría", category: WordClass.VERBO },
       { id: "221-13", text: "su", category: WordClass.DETERMINANTE },
-      { id: "221-14", text: "cumpleaños", category: WordClass.SUSTANTIVO },
+      { id: "221-14", text: "cumpleaños,", category: WordClass.SUSTANTIVO },
       { id: "221-15", text: "hubo", category: WordClass.VERBO },
       { id: "221-16", text: "muchas", category: WordClass.DETERMINANTE },
-      { id: "221-17", text: "conversaciones", category: WordClass.SUSTANTIVO },
+      { id: "221-17", text: "conversaciones.", category: WordClass.SUSTANTIVO },
     ]
   },
   {
@@ -1261,11 +1261,11 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "222-2", text: "ciento", category: WordClass.DETERMINANTE },
       { id: "222-3", text: "veinticuatro", category: WordClass.DETERMINANTE },
       { id: "222-4", text: "era", category: WordClass.VERBO },
-      { id: "222-5", text: "malicioso", category: WordClass.ADJETIVO },
+      { id: "222-5", text: "malicioso,", category: WordClass.ADJETIVO },
       { id: "222-6", text: "lleno", category: WordClass.ADJETIVO },
       { id: "222-7", text: "de", category: WordClass.PREPOSICION },
       { id: "222-8", text: "rencor", category: WordClass.SUSTANTIVO },
-      { id: "222-9", text: "infantil", category: WordClass.ADJETIVO },
+      { id: "222-9", text: "infantil.", category: WordClass.ADJETIVO },
     ]
   }
 ];

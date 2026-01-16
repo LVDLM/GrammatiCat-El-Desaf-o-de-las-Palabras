@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameView, GameState, WordClass, Level, WordData, Achievement, LevelGroup } from './types';
 import { INITIAL_LEVELS, LITERARY_ES_LEVELS, LITERARY_UNIVERSAL_LEVELS, KONAMI_CODE, INITIAL_ACHIEVEMENTS } from './constants';
@@ -148,7 +149,8 @@ const App: React.FC = () => {
       mode,
       isPlaying: !isTutorial, 
       isGameOver: false,
-      isTutorialMode: isTutorial
+      isTutorialMode: isTutorial,
+      powerups: resetSession ? { hints: 2, shields: 1, cleaners: 1 } : prev.powerups
     }));
     setFoundWords([]);
     setErrorWords([]);
@@ -164,7 +166,7 @@ const App: React.FC = () => {
   const tutorialSteps = [
     { text: "Aquí verás qué clase de palabra debes localizar en el texto.", position: 'category' as const },
     { text: "Debes encontrar todas las palabras antes de que acabe el tiempo.", position: 'time' as const },
-    { text: "Cada vez que marques una palabra que no es de la categoría que se pide, se marcará de rojo y perderás una vida.", position: 'lives' as const },
+    { text: "Cada vez que marques una palabra incorrecta, perderás una vida. Si es modo Práctica, perderás tiempo.", position: 'lives' as const },
     { text: "Usa tus ítems: PISTA resalta una palabra, LIMPIAR borra errores y ESCUDO bloquea un fallo.", position: 'items' as const },
     { text: "¡Genial! Ahora pulsa sobre las palabras de la categoría que se muestra para ganar puntos.", position: 'words' as const }
   ];
@@ -307,7 +309,6 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Fixed: LevelCard defined as a proper React.FC to prevent TypeScript errors regarding the 'key' prop in list rendering.
   const LevelCard: React.FC<{ level: Level }> = ({ level }) => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     return (
@@ -367,7 +368,7 @@ const App: React.FC = () => {
       {view === GameView.MENU && (
         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 w-full max-w-4xl text-center">
           <div className="relative mb-8 md:mb-12 floating">
-            <h1 className="text-6xl md:text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter select-none">GRAMMA<span className="text-yellow-300">CAT</span></h1>
+            <h1 className="text-6xl md:text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter select-none uppercase">GRAMMA<span className="text-yellow-300">CAT</span></h1>
             <div className={`absolute -top-12 -right-12 text-6xl text-white rotate-12 transition-opacity ${showKonamiEffect ? 'opacity-60 text-purple-400' : 'opacity-20 hidden md:block'}`}><i className="fas fa-cat"></i></div>
           </div>
           <div className="flex flex-col md:flex-row gap-6 md:gap-10">
@@ -421,12 +422,18 @@ const App: React.FC = () => {
                 ))}
               </div>
             </div>
+            
+            {/* Título de la obra debajo del texto */}
+            <p className={`mt-6 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] italic opacity-50 ${showKonamiEffect ? 'text-indigo-300' : 'text-indigo-900'}`}>
+              {currentLevel.title}
+            </p>
+
             {!gameState.isPlaying && !gameState.isGameOver && lastReward && (
-              <div className="fixed inset-0 flex items-center justify-center z-[200] animate-in fade-in zoom-in duration-500 px-4 py-10 overflow-y-auto">
+              <div className="fixed inset-0 flex items-center justify-center z-[200] animate-in fade-in zoom-in duration-500 px-4 py-8 overflow-y-auto overflow-x-hidden">
                 <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-sm pointer-events-auto"></div>
-                <div className="relative bg-white p-8 md:p-14 rounded-[3.5rem] md:rounded-[4.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.5)] border-[8px] md:border-[12px] border-indigo-500 text-center scale-100 transform rotate-[-1deg] max-w-full my-auto flex flex-col items-center pointer-events-auto">
-                   <h2 className="text-3xl md:text-6xl font-black text-indigo-900 mb-6 italic tracking-tighter uppercase leading-none">¡GENIAL!</h2>
-                   <div className="bg-indigo-50 p-6 md:p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center min-w-[240px] md:min-w-[280px]">
+                <div className="relative bg-white p-6 md:p-14 rounded-[3.5rem] md:rounded-[4.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.5)] border-[8px] md:border-[12px] border-indigo-500 text-center scale-100 transform rotate-[-1deg] max-w-full my-auto flex flex-col items-center pointer-events-auto min-h-0">
+                   <h2 className="text-3xl md:text-6xl font-black text-indigo-900 mb-4 md:mb-6 italic tracking-tighter uppercase leading-none">¡GENIAL!</h2>
+                   <div className="bg-indigo-50 p-6 md:p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-4 md:mb-6 flex flex-col items-center min-w-[200px] md:min-w-[280px]">
                       <div className={`text-6xl md:text-9xl mb-4 animate-bounce ${lastReward.color}`}><i className={`fas ${lastReward.icon}`}></i></div>
                       <span className={`text-2xl md:text-5xl font-black italic tracking-tight ${lastReward.color} uppercase`}>{lastReward.label}</span>
                    </div>
