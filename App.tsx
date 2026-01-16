@@ -165,10 +165,10 @@ const App: React.FC = () => {
   }, []);
 
   const checkAchievements = useCallback((updatedStats: GameState['stats']) => {
-    // 1. Un buen comienzo
+    // 1. Un buen comienzo (Tutorial)
     if (updatedStats.tutorialCompleted) unlockAchievement('tutorial_hero');
     
-    // 2. Primeros pasos
+    // 2. Primeros pasos (5 textos éxito)
     if (updatedStats.totalTextsSuccessful >= 5) unlockAchievement('first_steps');
     
     // 3. Retos acumulativos
@@ -181,14 +181,15 @@ const App: React.FC = () => {
     const totalSpanish = LITERARY_ES_LEVELS.length;
     const totalUniversal = LITERARY_UNIVERSAL_LEVELS.length;
     
-    const spanishDoneIds = LITERARY_ES_LEVELS.filter(l => updatedStats.completedLevels[l.id]).length;
-    const universalDoneIds = LITERARY_UNIVERSAL_LEVELS.filter(l => updatedStats.completedLevels[l.id]).length;
+    // Contamos niveles únicos que han sido superados en AL MENOS una categoría
+    const spanishDoneIdsCount = LITERARY_ES_LEVELS.filter(l => updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
+    const universalDoneIdsCount = LITERARY_UNIVERSAL_LEVELS.filter(l => updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
 
-    if (spanishDoneIds >= totalSpanish / 2 && universalDoneIds >= totalUniversal / 2) unlockAchievement('half_world');
-    if (spanishDoneIds === totalSpanish || universalDoneIds === totalUniversal) unlockAchievement('max_knowledge');
-    if (spanishDoneIds === totalSpanish && universalDoneIds === totalUniversal) unlockAchievement('absolute_knowledge');
+    if (spanishDoneIdsCount >= totalSpanish / 2 && universalDoneIdsCount >= totalUniversal / 2) unlockAchievement('half_world');
+    if (spanishDoneIdsCount === totalSpanish || universalDoneIdsCount === totalUniversal) unlockAchievement('max_knowledge');
+    if (spanishDoneIdsCount === totalSpanish && universalDoneIdsCount === totalUniversal) unlockAchievement('absolute_knowledge');
 
-    // 5. ¡A por todas! (En el nivel actual)
+    // 5. ¡A por todas! (Nivel actual todas las categorías)
     if (currentLevel) {
       const availableCats = Array.from(new Set(currentLevel.words.map(w => w.category)));
       const completedCats = updatedStats.completedLevels[currentLevel.id] || [];
@@ -197,7 +198,7 @@ const App: React.FC = () => {
       }
     }
 
-    // 6. No se puede saber más (Todos los predefinidos en todas sus categorías)
+    // 6. No se puede saber más (Todos los predefinidos todas las categorías)
     const allPredefined = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS];
     const isMaster = allPredefined.every(level => {
       const availableCats = Array.from(new Set(level.words.map(w => w.category)));
@@ -248,10 +249,9 @@ const App: React.FC = () => {
       
       const targetWordsCount = currentLevel.words.filter(w => w.category === gameState.targetCategory).length;
       if (newFound.length === targetWordsCount) {
-        // Nivel Superado con éxito
+        // Nivel Superado
         setGameState(prev => {
           const newStats = { ...prev.stats };
-          newStats.levelsCompleted += 1;
           
           if (prev.isTutorialMode) {
             newStats.tutorialCompleted = true;
@@ -259,16 +259,12 @@ const App: React.FC = () => {
             newStats.totalTextsSuccessful += 1;
             if (prev.mode === 'CHALLENGE') newStats.challengeTextsCount += 1;
             
-            // Registrar categoría completada para este nivel
+            // Registrar categoría completada
             const levelId = currentLevel.id;
             const alreadyDone = newStats.completedLevels[levelId] || [];
             if (!alreadyDone.includes(gameState.targetCategory!)) {
               newStats.completedLevels[levelId] = [...alreadyDone, gameState.targetCategory!];
             }
-          }
-
-          if (errorWords.length === 0 && !prev.isTutorialMode) {
-             // Retrasamos unlock para evitar bugs de estado, pero lo comprobamos aquí
           }
 
           checkAchievements(newStats);
@@ -290,10 +286,6 @@ const App: React.FC = () => {
           else if (reward.type === 'life') {
             newLives = Math.min(5, prev.lives + 1);
             if (newLives === 5) unlockAchievement('unstoppable');
-          }
-
-          if (gameState.time > (currentLevel.timeLimit || 30) / 2 && !prev.isTutorialMode) {
-            // Check speedster logic if needed...
           }
 
           return { ...prev, isPlaying: false, lives: newLives, powerups: newPowerups, stats: newStats };
@@ -413,7 +405,7 @@ const App: React.FC = () => {
 
   const AccordionSection = ({ id, title, icon, levels, color }: { id: LevelGroup, title: string, icon: string, levels: Level[], color: string }) => {
     const isExpanded = expandedCategory === id;
-    const completedCount = levels.filter(l => gameState.stats.completedLevels[l.id]).length;
+    const completedCount = levels.filter(l => gameState.stats.completedLevels[l.id] && gameState.stats.completedLevels[l.id].length > 0).length;
     return (
       <div className={`w-full rounded-3xl overflow-hidden transition-all duration-300 border-4 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
         <button onClick={() => setExpandedCategory(isExpanded ? null : id)} className={`w-full flex items-center justify-between p-6 md:p-8 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}>
@@ -423,7 +415,7 @@ const App: React.FC = () => {
             </div>
             <div>
               <h3 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
-              <p className="text-xs md:text-sm font-bold opacity-70 mt-1">{completedCount}/{levels.length} textos completados</p>
+              <p className="text-xs md:text-sm font-bold opacity-70 mt-1">{completedCount}/{levels.length} textos con algún progreso</p>
             </div>
           </div>
           <i className={`fas fa-chevron-down text-2xl md:text-4xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
@@ -444,7 +436,7 @@ const App: React.FC = () => {
       {lastUnlocked && (
         <div className="fixed top-8 right-8 z-[100] bg-white p-4 rounded-2xl shadow-2xl border-4 border-yellow-400 animate-in slide-in-from-right duration-500 flex items-center space-x-4">
           <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center text-indigo-900 text-xl"><i className={`fas ${lastUnlocked.icon}`}></i></div>
-          <div><span className="block text-[10px] font-black text-yellow-600 uppercase tracking-widest">¡Logro!</span><span className="block text-lg font-black text-indigo-900">{lastUnlocked.title}</span></div>
+          <div><span className="block text-[10px] font-black text-yellow-600 uppercase tracking-widest text-nowrap">¡Logro!</span><span className="block text-lg font-black text-indigo-900 text-nowrap">{lastUnlocked.title}</span></div>
         </div>
       )}
 
