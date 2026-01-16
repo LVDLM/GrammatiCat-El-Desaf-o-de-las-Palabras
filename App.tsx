@@ -29,34 +29,81 @@ const TutorialSign: React.FC<{
   position: 'category' | 'time' | 'lives' | 'items' | 'words';
   isMidnight: boolean;
 }> = ({ text, onNext, position, isMidnight }) => {
-  const positionClasses = {
-    category: 'top-28 md:top-36 left-1/2 -translate-x-1/2',
-    time: 'top-28 md:top-36 right-2 md:right-10',
-    lives: 'top-28 md:top-36 left-2 md:left-10',
-    items: 'bottom-32 md:bottom-48 left-1/2 -translate-x-1/2',
-    words: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
-  };
+  const [coords, setCoords] = useState<{ top: number; left: number; arrow: 'up' | 'down' }>({ top: -1000, left: -1000, arrow: 'up' });
 
-  const arrowClasses = {
-    category: 'top-full left-1/2 -translate-x-1/2 border-t-[20px]',
-    time: 'top-full right-10 border-t-[20px]',
-    lives: 'top-full left-10 border-t-[20px]',
-    items: 'bottom-full left-1/2 -translate-x-1/2 border-b-[20px]',
-    words: 'hidden'
-  };
+  useEffect(() => {
+    const updatePosition = () => {
+      const targetId = {
+        category: 'hud-category',
+        time: 'hud-timer',
+        lives: 'hud-lives',
+        items: 'powerups-bar',
+        words: 'game-board'
+      }[position];
 
-  const arrowThemeClass = isMidnight ? (position === 'items' ? 'border-b-slate-800' : 'border-t-slate-800') : (position === 'items' ? 'border-b-white' : 'border-t-white');
+      let targetEl = document.getElementById(targetId);
+      
+      // Si el elemento de escritorio está oculto (móvil), buscar el alternativo
+      if (position === 'category' && targetEl && window.getComputedStyle(targetEl).display === 'none') {
+        const mobileCategory = document.getElementById('hud-category-mobile');
+        if (mobileCategory) targetEl = mobileCategory;
+      }
+
+      if (targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        
+        // Colocamos el cartel siempre SOBRE el elemento para HUD e ítems
+        let top = rect.top - 180;
+        let left = rect.left + rect.width / 2;
+        let arrow: 'up' | 'down' = 'down';
+
+        if (position === 'words') {
+          // En el tablero lo centramos un poco más
+          top = rect.top + rect.height / 2 - 100;
+          arrow = 'down';
+        }
+        
+        // Ajuste de seguridad si se sale por arriba
+        top = Math.max(10, top);
+
+        setCoords({ top, left, arrow });
+      }
+    };
+
+    // Pequeño delay para asegurar que el DOM ha terminado de renderizar el HUD
+    const timer = setTimeout(updatePosition, 150);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [position]);
 
   return (
     <div 
-      className={`fixed ${positionClasses[position]} z-[150] w-[90%] max-w-sm animate-in zoom-in duration-300 cursor-pointer`}
+      className="fixed z-[150] w-[90%] max-w-sm transition-all duration-500 animate-in fade-in zoom-in duration-300 cursor-pointer"
+      style={{ 
+        top: coords.top, 
+        left: coords.left, 
+        transform: 'translateX(-50%)' 
+      }}
       onClick={onNext}
     >
       <div className={`relative p-6 rounded-[2rem] border-4 shadow-2xl ${isMidnight ? 'bg-slate-800 border-indigo-500 text-white' : 'bg-white border-yellow-400 text-indigo-900'}`}>
-        <div className={`absolute w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent ${arrowClasses[position]} ${arrowThemeClass}`}></div>
+        {/* Flecha apuntando abajo al elemento */}
+        <div 
+          className={`absolute w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent left-1/2 -translate-x-1/2 ${
+            coords.arrow === 'up' 
+              ? 'bottom-full border-b-[20px] ' + (isMidnight ? 'border-b-indigo-500' : 'border-b-yellow-400')
+              : 'top-full border-t-[20px] ' + (isMidnight ? 'border-t-indigo-500' : 'border-t-yellow-400')
+          }`}
+        ></div>
+        
         <p className="text-lg font-black leading-tight mb-4 text-center">{text}</p>
         <div className="flex justify-center">
-          <span className="px-4 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest animate-pulse">Siguiente <i className="fas fa-chevron-right ml-1"></i></span>
+          <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg transition-all active:scale-90 animate-pulse">
+            SIGUIENTE <i className="fas fa-chevron-right ml-1"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -403,7 +450,7 @@ const App: React.FC = () => {
         </div>
       )}
       {view === GameView.PLAYING && currentLevel && gameState.targetCategory && (
-        <div className={`w-full h-full flex flex-col items-center justify-start md:justify-center animate-in zoom-in duration-500 overflow-hidden relative ${tutorialStep !== null ? 'pt-32 md:pt-40' : 'py-4'}`}>
+        <div className={`w-full h-full flex flex-col items-center justify-start md:justify-center animate-in zoom-in duration-500 overflow-hidden relative ${tutorialStep !== null ? 'pt-10' : 'py-4'}`}>
           {tutorialStep !== null && (
             <TutorialSign 
               text={tutorialSteps[tutorialStep].text} 
@@ -415,10 +462,10 @@ const App: React.FC = () => {
           
           <GameHUD state={gameState} target={gameState.targetCategory} />
           <div className="w-full max-w-6xl relative flex-1 mx-2 flex flex-col items-center justify-center">
-            <div className={`w-full h-full rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 shadow-2xl border-b-8 flex flex-col justify-center overflow-hidden transition-all ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+            <div id="game-board" className={`w-full h-full rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 shadow-2xl border-b-8 flex flex-col justify-center overflow-hidden transition-all ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
               <div className={`relative z-10 flex flex-wrap justify-center items-center gap-x-2 md:gap-x-4 gap-y-3 md:gap-y-6 font-black leading-tight h-full content-center ${gameFontSize} ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
                 {currentLevel.words.map((w) => (
-                  <span key={w.id} onClick={() => handleWordClick(w)} className={`cursor-pointer px-3 md:px-5 py-1 md:py-2 rounded-2xl md:rounded-[2rem] transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-[0_5px_0_rgb(22,163,74)] -rotate-2 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-2 scale-105 opacity-40 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 md:ring-8 ring-yellow-400 animate-pulse shadow-yellow-200' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
+                  <span key={w.id} onClick={() => handleWordClick(w)} className={`cursor-pointer px-4 md:px-5 py-1 md:py-2 rounded-2xl md:rounded-[2rem] transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-[0_5px_0_rgb(22,163,74)] -rotate-2 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-2 scale-105 opacity-40 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 md:ring-8 ring-yellow-400 animate-pulse shadow-yellow-200' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
                 ))}
               </div>
             </div>
@@ -447,7 +494,7 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="mt-4 md:mt-8 flex gap-3 md:gap-8 flex-wrap justify-center px-4 pb-4">
+          <div id="powerups-bar" className="mt-4 md:mt-8 flex gap-3 md:gap-8 flex-wrap justify-center px-4 pb-4 p-2 rounded-3xl">
             {[ { type: 'hint' as const, icon: 'fa-lightbulb', label: 'PISTA', count: gameState.powerups.hints, color: 'cyan' }, { type: 'clean' as const, icon: 'fa-broom', label: 'LIMPIAR', count: gameState.powerups.cleaners, color: 'rose' }, { type: 'shield' as const, icon: 'fa-shield-alt', label: 'ESCUDO', count: gameState.powerups.shields, color: 'lime' }, ].map((p) => (
               <button key={p.type} onClick={() => p.type !== 'shield' ? usePowerup(p.type) : null} disabled={p.count <= 0} className={`group relative w-16 h-16 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[1.5rem] md:rounded-[2rem] shadow-lg border-b-4 md:border-b-8 transition-all active:scale-95 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500 hover:bg-${p.color}-200`) : 'bg-slate-700 border-slate-800 opacity-50'}`}><i className={`fas ${p.icon} text-xl md:text-4xl mb-0.5 md:mb-1 ${showKonamiEffect ? `text-${p.color}-200` : `text-${p.color}-800`}`}></i><span className={`text-[8px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : `text-${p.color}-900`}`}>{p.label} ({p.count})</span></button>
             ))}
