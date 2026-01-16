@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameView, GameState, WordClass, Level, WordData, Achievement, LevelGroup } from './types';
 import { INITIAL_LEVELS, LITERARY_ES_LEVELS, LITERARY_UNIVERSAL_LEVELS, KONAMI_CODE, INITIAL_ACHIEVEMENTS } from './constants';
@@ -6,7 +5,7 @@ import { GameHUD } from './components/GameHUD';
 import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
 import { Leaderboard } from './components/Leaderboard';
-import { fetchCommunityLevels, saveScore, debugLogs, addLog } from './services/supabaseService';
+import { fetchCommunityLevels, saveScore } from './services/supabaseService';
 
 export const getPluralCategory = (cat: WordClass): string => {
   switch (cat) {
@@ -63,29 +62,8 @@ const TutorialSign: React.FC<{
   );
 };
 
-const DebugConsole: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [logs, setLogs] = useState<string[]>([...debugLogs]);
-  useEffect(() => {
-    const handleUpdate = () => setLogs([...debugLogs]);
-    window.addEventListener('grammaticat-debug-update', handleUpdate);
-    return () => window.removeEventListener('grammaticat-debug-update', handleUpdate);
-  }, []);
-  return (
-    <div className="fixed bottom-20 right-4 z-[200] w-80 max-h-96 bg-black/95 text-green-400 font-mono text-[10px] p-4 rounded-2xl border-2 border-green-500/30 shadow-2xl flex flex-col overflow-hidden">
-      <div className="flex justify-between items-center mb-2 border-b border-green-500/20 pb-2">
-        <span className="font-bold uppercase tracking-widest flex items-center"><i className="fas fa-microchip mr-2 animate-pulse"></i>SISTEMA LOGS</span>
-        <button onClick={onClose} className="hover:text-white"><i className="fas fa-times"></i></button>
-      </div>
-      <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-1">
-        {logs.length === 0 ? <p className="opacity-40 italic">Esperando eventos...</p> : logs.map((log, i) => <div key={i} className="leading-tight break-words">{log}</div>)}
-      </div>
-    </div>
-  );
-};
-
 const App: React.FC = () => {
   const [view, setView] = useState<GameView>(GameView.MENU);
-  const [showDebug, setShowDebug] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<LevelGroup | null>(null);
   const [tutorialStep, setTutorialStep] = useState<number | null>(null);
   
@@ -216,7 +194,6 @@ const App: React.FC = () => {
     await saveScore({ name: playerName, score: gameState.score });
     setIsSavingScore(false);
     setScoreSaved(true);
-    addLog(`Puntuación de ${playerName} registrada localmente.`);
   };
 
   const usePowerup = (type: 'hint' | 'clean' | 'shield') => {
@@ -316,7 +293,6 @@ const App: React.FC = () => {
         });
         if (isMatch) {
           if (matchLength === KONAMI_CODE.length) {
-            addLog("--- 🗝️ CÓDIGO KONAMI ACTIVADO ---");
             unlockAchievement('hidden_discoverer');
             setShowKonamiEffect(true);
             setView(GameView.EDITOR);
@@ -331,7 +307,8 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const LevelCard = ({ level }: { level: Level }) => {
+  // Fixed: LevelCard defined as a proper React.FC to prevent TypeScript errors regarding the 'key' prop in list rendering.
+  const LevelCard: React.FC<{ level: Level }> = ({ level }) => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     return (
       <div className={`rounded-2xl p-4 shadow-md border-b-2 transition-all hover:bg-indigo-50/50 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-50'}`}>
@@ -381,8 +358,6 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen w-full flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active konami-unlock-flash' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'}`}>
-      <button onClick={() => setShowDebug(!showDebug)} className="fixed bottom-4 right-4 z-[200] w-12 h-12 bg-black/80 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black transition-all border border-white/10"><i className={`fas fa-bug ${showDebug ? 'text-green-400' : 'opacity-40'}`}></i></button>
-      {showDebug && <DebugConsole onClose={() => setShowDebug(false)} />}
       {lastUnlocked && (
         <div className="fixed top-8 right-8 z-[100] bg-white p-4 rounded-2xl shadow-2xl border-4 border-yellow-400 animate-in slide-in-from-right duration-500 flex items-center space-x-4">
           <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center text-indigo-900 text-xl"><i className={`fas ${lastUnlocked.icon}`}></i></div>

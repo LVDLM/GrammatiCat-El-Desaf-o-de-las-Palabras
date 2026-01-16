@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { WordClass, Level, WordData } from '../types';
 import { analyzeTextWithAI } from '../services/geminiService';
-import { saveLevelLocally, addLog } from '../services/supabaseService';
+import { saveLevelLocally } from '../services/supabaseService';
 
 interface Props {
   onSave: (level: Level) => void;
@@ -100,7 +100,6 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
       const code = JSON.stringify(newLevel, null, 2);
       navigator.clipboard.writeText(code);
       setCopied(true);
-      addLog("Código de nivel copiado al portapapeles.");
       setTimeout(() => setCopied(false), 2000);
       return;
     }
