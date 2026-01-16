@@ -30,22 +30,22 @@ const TutorialSign: React.FC<{
   isMidnight: boolean;
 }> = ({ text, onNext, position, isMidnight }) => {
   const positionClasses = {
-    category: 'top-4 md:top-8 left-1/2 -translate-x-1/2',
-    time: 'top-4 md:top-8 right-2 md:right-10',
-    lives: 'top-4 md:top-8 left-2 md:left-10',
+    category: 'top-28 md:top-36 left-1/2 -translate-x-1/2',
+    time: 'top-28 md:top-36 right-2 md:right-10',
+    lives: 'top-28 md:top-36 left-2 md:left-10',
     items: 'bottom-32 md:bottom-48 left-1/2 -translate-x-1/2',
     words: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
   };
 
   const arrowClasses = {
-    category: 'top-full left-1/2 -translate-x-1/2 border-t-white',
-    time: 'top-full right-10 border-t-white',
-    lives: 'top-full left-10 border-t-white',
-    items: 'top-full left-1/2 -translate-x-1/2 border-t-white',
+    category: 'top-full left-1/2 -translate-x-1/2 border-t-[20px]',
+    time: 'top-full right-10 border-t-[20px]',
+    lives: 'top-full left-10 border-t-[20px]',
+    items: 'bottom-full left-1/2 -translate-x-1/2 border-b-[20px]',
     words: 'hidden'
   };
 
-  const arrowThemeClass = isMidnight ? 'border-t-slate-800' : 'border-t-white';
+  const arrowThemeClass = isMidnight ? (position === 'items' ? 'border-b-slate-800' : 'border-t-slate-800') : (position === 'items' ? 'border-b-white' : 'border-t-white');
 
   return (
     <div 
@@ -53,7 +53,7 @@ const TutorialSign: React.FC<{
       onClick={onNext}
     >
       <div className={`relative p-6 rounded-[2rem] border-4 shadow-2xl ${isMidnight ? 'bg-slate-800 border-indigo-500 text-white' : 'bg-white border-yellow-400 text-indigo-900'}`}>
-        <div className={`absolute w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[20px] ${arrowClasses[position]} ${arrowThemeClass}`}></div>
+        <div className={`absolute w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent ${arrowClasses[position]} ${arrowThemeClass}`}></div>
         <p className="text-lg font-black leading-tight mb-4 text-center">{text}</p>
         <div className="flex justify-center">
           <span className="px-4 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest animate-pulse">Siguiente <i className="fas fa-chevron-right ml-1"></i></span>
@@ -447,15 +447,20 @@ const App: React.FC = () => {
               </div>
             </div>
             {!gameState.isPlaying && !gameState.isGameOver && lastReward && (
-              <div className="absolute inset-0 flex items-center justify-center z-[100] animate-in fade-in zoom-in duration-500 px-4">
-                <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-sm rounded-[3rem] md:rounded-[5rem]"></div>
-                <div className="relative bg-white p-8 md:p-14 rounded-[3.5rem] md:rounded-[4.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.5)] border-[8px] md:border-[12px] border-indigo-500 text-center scale-100 md:scale-110 transform rotate-[-1deg]">
+              <div className="fixed inset-0 flex items-center justify-center z-[200] animate-in fade-in zoom-in duration-500 px-4 py-10 overflow-y-auto">
+                <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-sm pointer-events-auto"></div>
+                <div className="relative bg-white p-8 md:p-14 rounded-[3.5rem] md:rounded-[4.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.5)] border-[8px] md:border-[12px] border-indigo-500 text-center scale-100 transform rotate-[-1deg] max-w-full my-auto flex flex-col items-center pointer-events-auto">
                    <h2 className="text-3xl md:text-6xl font-black text-indigo-900 mb-6 italic tracking-tighter uppercase leading-none">¡GENIAL!</h2>
-                   <div className="bg-indigo-50 p-6 md:p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center min-w-[280px]">
+                   <div className="bg-indigo-50 p-6 md:p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center min-w-[240px] md:min-w-[280px]">
                       <div className={`text-6xl md:text-9xl mb-4 animate-bounce ${lastReward.color}`}><i className={`fas ${lastReward.icon}`}></i></div>
                       <span className={`text-2xl md:text-5xl font-black italic tracking-tight ${lastReward.color} uppercase`}>{lastReward.label}</span>
                    </div>
-                   <div className="flex flex-col items-center"><p className="text-slate-400 font-black animate-pulse text-sm uppercase tracking-widest">Siguiente reto en camino...</p><div className="mt-4 w-48 h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 animate-[loading_3s_linear]"></div></div></div>
+                   <div className="flex flex-col items-center w-full">
+                      <p className="text-slate-400 font-black animate-pulse text-[10px] md:text-sm uppercase tracking-widest">Siguiente reto en camino...</p>
+                      <div className="mt-4 w-40 md:w-48 h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 animate-[loading_3s_linear]"></div>
+                      </div>
+                   </div>
                 </div>
               </div>
             )}
