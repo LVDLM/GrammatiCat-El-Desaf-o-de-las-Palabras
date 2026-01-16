@@ -10,7 +10,7 @@ export enum WordClass {
   DETERMINANTE = 'Determinante'
 }
 
-export type LevelGroup = 'Entrenamiento' | 'Literatura en español' | 'Literatura universal' | 'Tus Niveles';
+export type LevelGroup = 'Tutorial' | 'Literatura en español' | 'Literatura universal' | 'Tus Niveles';
 
 export interface WordData {
   text: string;
@@ -64,6 +64,7 @@ export interface GameState {
     nounsFound: number;
     levelsCompleted: number;
   };
+  isTutorialMode?: boolean;
 }
 
 export enum GameView {

@@ -4,11 +4,11 @@ import { WordClass, Level, Achievement } from './types';
 export const INITIAL_LEVELS: Level[] = [
   {
     id: 1,
-    title: "El Bosque Mágico",
-    categoryGroup: 'Entrenamiento',
-    text: "El gato negro corre rápido por el bosque verde y saltó sobre una rama pequeña.",
+    title: "Bienvenido a GrammatiCat",
+    categoryGroup: 'Tutorial',
+    text: "El gato negro corre rápido por el bosque verde.",
     targetCategory: WordClass.SUSTANTIVO,
-    timeLimit: 30,
+    timeLimit: 60,
     words: [
       { id: "1-1", text: "El", category: WordClass.DETERMINANTE },
       { id: "1-2", text: "gato", category: WordClass.SUSTANTIVO },
@@ -18,33 +18,7 @@ export const INITIAL_LEVELS: Level[] = [
       { id: "1-6", text: "por", category: WordClass.PREPOSICION },
       { id: "1-7", text: "el", category: WordClass.DETERMINANTE },
       { id: "1-8", text: "bosque", category: WordClass.SUSTANTIVO },
-      { id: "1-9", text: "verde", category: WordClass.ADJETIVO },
-      { id: "1-10", text: "y", category: WordClass.CONJUNCION },
-      { id: "1-11", text: "saltó", category: WordClass.VERBO },
-      { id: "1-12", text: "sobre", category: WordClass.PREPOSICION },
-      { id: "1-13", text: "una", category: WordClass.DETERMINANTE },
-      { id: "1-14", text: "rama", category: WordClass.SUSTANTIVO },
-      { id: "1-15", text: "pequeña.", category: WordClass.ADJETIVO },
-    ]
-  },
-  {
-    id: 2,
-    title: "La Aventura Espacial",
-    categoryGroup: 'Entrenamiento',
-    text: "Los astronautas valientes exploran planetas lejanos con sus naves plateadas.",
-    targetCategory: WordClass.ADJETIVO,
-    timeLimit: 25,
-    words: [
-      { id: "2-1", text: "Los", category: WordClass.DETERMINANTE },
-      { id: "2-2", text: "astronautas", category: WordClass.SUSTANTIVO },
-      { id: "2-3", text: "valientes", category: WordClass.ADJETIVO },
-      { id: "2-4", text: "exploran", category: WordClass.VERBO },
-      { id: "2-5", text: "planetas", category: WordClass.SUSTANTIVO },
-      { id: "2-6", text: "lejanos", category: WordClass.ADJETIVO },
-      { id: "2-7", text: "con", category: WordClass.PREPOSICION },
-      { id: "2-8", text: "sus", category: WordClass.DETERMINANTE },
-      { id: "2-9", text: "naves", category: WordClass.SUSTANTIVO },
-      { id: "2-10", text: "plateadas.", category: WordClass.ADJETIVO },
+      { id: "1-9", text: "verde.", category: WordClass.ADJETIVO },
     ]
   }
 ];
