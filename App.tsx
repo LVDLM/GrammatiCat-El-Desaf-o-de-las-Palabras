@@ -421,16 +421,16 @@ const App: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-6 md:gap-10">
             <button onClick={() => setView(GameView.LEVEL_SELECT)} className={`group relative w-full md:w-72 h-40 md:h-72 rounded-[2rem] md:rounded-[3rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
               <i className="fas fa-graduation-cap text-5xl md:text-7xl text-indigo-500 mb-2 md:mb-4 group-hover:rotate-12 transition-transform"></i>
-              <span className={`text-2xl md:text-3xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>APRENDER</span>
+              <span className={`text-2xl md:text-3xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>PRACTICAR</span>
             </button>
             <button onClick={() => startRandomChallenge(false)} className={`group relative w-full md:w-72 h-40 md:h-72 rounded-[2rem] md:rounded-[3rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950' : 'bg-yellow-400 border-yellow-600'}`}>
               <i className={`fas fa-fire text-5xl md:text-7xl mb-2 md:mb-4 group-hover:scale-125 transition-transform animate-pulse ${showKonamiEffect ? 'text-yellow-400' : 'text-indigo-900'}`}></i>
               <span className={`text-2xl md:text-3xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO</span>
             </button>
           </div>
-          <div className="mt-12 flex flex-wrap justify-center gap-4">
-            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black border-2 border-yellow-500 shadow-lg text-sm"><i className="fas fa-list-ol mr-2"></i> RANKING</button>
-            <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-6 py-3 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 text-sm"><i className="fas fa-trophy mr-2"></i> LOGROS</button>
+          <div className="mt-12 flex flex-wrap justify-center gap-6">
+            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-10 py-5 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black border-2 border-yellow-500 shadow-xl text-lg md:text-xl transition-all hover:scale-105 active:scale-95"><i className="fas fa-list-ol mr-2"></i> RÁNKNG</button>
+            <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-10 py-5 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 text-lg md:text-xl shadow-xl backdrop-blur-sm transition-all hover:scale-105 active:scale-95"><i className="fas fa-trophy mr-2"></i> LOGROS</button>
           </div>
         </div>
       )}
@@ -503,7 +503,7 @@ const App: React.FC = () => {
         </div>
       )}
       {view === GameView.GAME_OVER && (
-        <div className={`text-center p-8 md:p-16 rounded-[3rem] md:rounded-[4rem] shadow-2xl border-x-4 md:border-x-8 border-b-4 md:border-b-8 border-rose-500 animate-in zoom-in duration-300 w-full max-w-lg mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
+        <div className={`text-center p-8 md:p-16 rounded-[3rem] md:rounded-[4rem] shadow-2xl border-x-4 md:border-x-8 border-b-4 md:border-b-8 border-rose-500 animate-in zoom-in duration-300 w-full max-lg mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
           <i className="fas fa-skull text-6xl md:text-8xl text-rose-500 mb-6 block"></i>
           <h2 className={`text-5xl md:text-7xl font-black italic tracking-tighter mb-4 ${showKonamiEffect ? 'text-white' : 'text-slate-900'}`}>GAME OVER</h2>
           <div className="mb-8 p-4 md:p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100 flex flex-col items-center">
