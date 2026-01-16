@@ -43,7 +43,6 @@ const TutorialSign: React.FC<{
 
       let targetEl = document.getElementById(targetId);
       
-      // Si el elemento de escritorio está oculto (móvil), buscar el alternativo
       if (position === 'category' && targetEl && window.getComputedStyle(targetEl).display === 'none') {
         const mobileCategory = document.getElementById('hud-category-mobile');
         if (mobileCategory) targetEl = mobileCategory;
@@ -51,26 +50,20 @@ const TutorialSign: React.FC<{
 
       if (targetEl) {
         const rect = targetEl.getBoundingClientRect();
-        
-        // Colocamos el cartel siempre SOBRE el elemento para HUD e ítems
         let top = rect.top - 180;
         let left = rect.left + rect.width / 2;
         let arrow: 'up' | 'down' = 'down';
 
         if (position === 'words') {
-          // En el tablero lo centramos un poco más
           top = rect.top + rect.height / 2 - 100;
           arrow = 'down';
         }
         
-        // Ajuste de seguridad si se sale por arriba
         top = Math.max(10, top);
-
         setCoords({ top, left, arrow });
       }
     };
 
-    // Pequeño delay para asegurar que el DOM ha terminado de renderizar el HUD
     const timer = setTimeout(updatePosition, 150);
     window.addEventListener('resize', updatePosition);
     return () => {
@@ -82,26 +75,14 @@ const TutorialSign: React.FC<{
   return (
     <div 
       className="fixed z-[150] w-[90%] max-w-sm transition-all duration-500 animate-in fade-in zoom-in duration-300 cursor-pointer"
-      style={{ 
-        top: coords.top, 
-        left: coords.left, 
-        transform: 'translateX(-50%)' 
-      }}
+      style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
       onClick={onNext}
     >
       <div className={`relative p-6 rounded-[2rem] border-4 shadow-2xl ${isMidnight ? 'bg-slate-800 border-indigo-500 text-white' : 'bg-white border-yellow-400 text-indigo-900'}`}>
-        {/* Flecha apuntando abajo al elemento */}
-        <div 
-          className={`absolute w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent left-1/2 -translate-x-1/2 ${
-            coords.arrow === 'up' 
-              ? 'bottom-full border-b-[20px] ' + (isMidnight ? 'border-b-indigo-500' : 'border-b-yellow-400')
-              : 'top-full border-t-[20px] ' + (isMidnight ? 'border-t-indigo-500' : 'border-t-yellow-400')
-          }`}
-        ></div>
-        
+        <div className={`absolute w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent left-1/2 -translate-x-1/2 ${coords.arrow === 'up' ? 'bottom-full border-b-[20px] ' + (isMidnight ? 'border-b-indigo-500' : 'border-b-yellow-400') : 'top-full border-t-[20px] ' + (isMidnight ? 'border-t-indigo-500' : 'border-t-yellow-400')}`}></div>
         <p className="text-lg font-black leading-tight mb-4 text-center">{text}</p>
         <div className="flex justify-center">
-          <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg transition-all active:scale-90 animate-pulse">
+          <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg animate-pulse">
             SIGUIENTE <i className="fas fa-chevron-right ml-1"></i>
           </button>
         </div>
@@ -117,7 +98,14 @@ const App: React.FC = () => {
   
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedStats = localStorage.getItem('grammaticat_stats');
-    const stats = savedStats ? JSON.parse(savedStats) : { nounsFound: 0, levelsCompleted: 0 };
+    const stats = savedStats ? JSON.parse(savedStats) : { 
+      nounsFound: 0, 
+      levelsCompleted: 0, 
+      totalTextsSuccessful: 0, 
+      challengeTextsCount: 0,
+      tutorialCompleted: false,
+      completedLevels: {} 
+    };
     return {
       score: 0, lives: 3, time: 0, levelIndex: 0, isPlaying: false, isGameOver: false,
       targetCategory: null, mode: null, powerups: { hints: 2, shields: 1, cleaners: 1 }, stats
@@ -148,14 +136,6 @@ const App: React.FC = () => {
     else document.body.classList.remove('konami-active');
   }, [showKonamiEffect]);
 
-  const gameFontSize = useMemo(() => {
-    if (!currentLevel) return 'text-3xl md:text-5xl';
-    const count = currentLevel.words.length;
-    if (count > 40) return 'text-xl md:text-3xl';
-    if (count > 25) return 'text-2xl md:text-4xl';
-    return 'text-3xl md:text-5xl';
-  }, [currentLevel]);
-
   useEffect(() => { localStorage.setItem('grammaticat_stats', JSON.stringify(gameState.stats)); }, [gameState.stats]);
   useEffect(() => { localStorage.setItem('grammaticat_achievements', JSON.stringify(achievements)); }, [achievements]);
 
@@ -165,13 +145,13 @@ const App: React.FC = () => {
         try {
           const localUserLevels = await fetchCommunityLevels();
           setCommunityLevels(localUserLevels);
-        } catch (e) { console.error("Failed to load local levels", e); }
+        } catch (e) { console.error("Failed to load levels", e); }
       };
       loadCommunity();
     }
   }, [view]);
 
-  const unlockAchievement = (id: string) => {
+  const unlockAchievement = useCallback((id: string) => {
     setAchievements(prev => {
       const ach = prev.find(a => a.id === id);
       if (ach && !ach.unlocked) {
@@ -182,7 +162,51 @@ const App: React.FC = () => {
       }
       return prev;
     });
-  };
+  }, []);
+
+  const checkAchievements = useCallback((updatedStats: GameState['stats']) => {
+    // 1. Un buen comienzo
+    if (updatedStats.tutorialCompleted) unlockAchievement('tutorial_hero');
+    
+    // 2. Primeros pasos
+    if (updatedStats.totalTextsSuccessful >= 5) unlockAchievement('first_steps');
+    
+    // 3. Retos acumulativos
+    if (updatedStats.challengeTextsCount >= 10) unlockAchievement('challenge_10');
+    if (updatedStats.challengeTextsCount >= 25) unlockAchievement('challenge_25');
+    if (updatedStats.challengeTextsCount >= 35) unlockAchievement('challenge_35');
+    if (updatedStats.challengeTextsCount >= 50) unlockAchievement('challenge_50');
+
+    // 4. Geográficos / Porcentajes
+    const totalSpanish = LITERARY_ES_LEVELS.length;
+    const totalUniversal = LITERARY_UNIVERSAL_LEVELS.length;
+    
+    const spanishDoneIds = LITERARY_ES_LEVELS.filter(l => updatedStats.completedLevels[l.id]).length;
+    const universalDoneIds = LITERARY_UNIVERSAL_LEVELS.filter(l => updatedStats.completedLevels[l.id]).length;
+
+    if (spanishDoneIds >= totalSpanish / 2 && universalDoneIds >= totalUniversal / 2) unlockAchievement('half_world');
+    if (spanishDoneIds === totalSpanish || universalDoneIds === totalUniversal) unlockAchievement('max_knowledge');
+    if (spanishDoneIds === totalSpanish && universalDoneIds === totalUniversal) unlockAchievement('absolute_knowledge');
+
+    // 5. ¡A por todas! (En el nivel actual)
+    if (currentLevel) {
+      const availableCats = Array.from(new Set(currentLevel.words.map(w => w.category)));
+      const completedCats = updatedStats.completedLevels[currentLevel.id] || [];
+      if (availableCats.every(cat => completedCats.includes(cat))) {
+        unlockAchievement('all_categories_single');
+      }
+    }
+
+    // 6. No se puede saber más (Todos los predefinidos en todas sus categorías)
+    const allPredefined = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS];
+    const isMaster = allPredefined.every(level => {
+      const availableCats = Array.from(new Set(level.words.map(w => w.category)));
+      const completedCats = updatedStats.completedLevels[level.id] || [];
+      return availableCats.every(cat => completedCats.includes(cat));
+    });
+    if (isMaster) unlockAchievement('all_categories_all_texts');
+
+  }, [unlockAchievement, currentLevel]);
 
   const startGame = (level: Level, category: WordClass, mode: 'PRACTICE' | 'CHALLENGE', resetSession: boolean = true) => {
     const isTutorial = level.categoryGroup === 'Tutorial';
@@ -199,32 +223,101 @@ const App: React.FC = () => {
       isTutorialMode: isTutorial,
       powerups: resetSession ? { hints: 2, shields: 1, cleaners: 1 } : prev.powerups
     }));
-    setFoundWords([]);
-    setErrorWords([]);
-    setHighlightedWords([]);
-    setCleanedWords([]);
-    setLastReward(null);
-    setScoreSaved(false);
+    setFoundWords([]); setErrorWords([]); setHighlightedWords([]); setCleanedWords([]); setLastReward(null); setScoreSaved(false);
     setView(GameView.PLAYING);
-    if (isTutorial) setTutorialStep(0);
-    else setTutorialStep(null);
+    if (isTutorial) setTutorialStep(0); else setTutorialStep(null);
   };
-
-  const tutorialSteps = [
-    { text: "Aquí verás qué clase de palabra debes localizar en el texto.", position: 'category' as const },
-    { text: "Debes encontrar todas las palabras antes de que acabe el tiempo.", position: 'time' as const },
-    { text: "Cada vez que marques una palabra incorrecta, perderás una vida. Si es modo Práctica, perderás tiempo.", position: 'lives' as const },
-    { text: "Usa tus ítems: PISTA resalta una palabra, LIMPIAR borra errores y ESCUDO bloquea un fallo.", position: 'items' as const },
-    { text: "¡Genial! Ahora pulsa sobre las palabras de la categoría que se muestra para ganar puntos.", position: 'words' as const }
-  ];
 
   const nextTutorialStep = () => {
     if (tutorialStep === null) return;
-    if (tutorialStep < tutorialSteps.length - 1) {
-      setTutorialStep(tutorialStep + 1);
-    } else {
+    if (tutorialStep < 4) setTutorialStep(tutorialStep + 1);
+    else {
       setTutorialStep(null);
       setGameState(prev => ({ ...prev, isPlaying: true }));
+    }
+  };
+
+  const handleWordClick = (word: WordData) => {
+    if (!gameState.isPlaying || !currentLevel || !gameState.targetCategory) return;
+    if (foundWords.includes(word.id) || errorWords.includes(word.id) || cleanedWords.includes(word.id)) return;
+    
+    if (word.category === gameState.targetCategory) {
+      const newFound = [...foundWords, word.id];
+      setFoundWords(newFound);
+      setGameState(prev => ({ ...prev, score: prev.score + 10, stats: { ...prev.stats, nounsFound: prev.stats.nounsFound + (word.category === WordClass.SUSTANTIVO ? 1 : 0) } }));
+      
+      const targetWordsCount = currentLevel.words.filter(w => w.category === gameState.targetCategory).length;
+      if (newFound.length === targetWordsCount) {
+        // Nivel Superado con éxito
+        setGameState(prev => {
+          const newStats = { ...prev.stats };
+          newStats.levelsCompleted += 1;
+          
+          if (prev.isTutorialMode) {
+            newStats.tutorialCompleted = true;
+          } else {
+            newStats.totalTextsSuccessful += 1;
+            if (prev.mode === 'CHALLENGE') newStats.challengeTextsCount += 1;
+            
+            // Registrar categoría completada para este nivel
+            const levelId = currentLevel.id;
+            const alreadyDone = newStats.completedLevels[levelId] || [];
+            if (!alreadyDone.includes(gameState.targetCategory!)) {
+              newStats.completedLevels[levelId] = [...alreadyDone, gameState.targetCategory!];
+            }
+          }
+
+          if (errorWords.length === 0 && !prev.isTutorialMode) {
+             // Retrasamos unlock para evitar bugs de estado, pero lo comprobamos aquí
+          }
+
+          checkAchievements(newStats);
+          
+          const rewardRoll = Math.random();
+          let reward: Reward;
+          if (rewardRoll < 0.25) reward = { type: 'hint', label: '+1 Pista', icon: 'fa-lightbulb', color: 'text-cyan-400' };
+          else if (rewardRoll < 0.50) reward = { type: 'cleaner', label: '+1 Limpiar', icon: 'fa-broom', color: 'text-rose-400' };
+          else if (rewardRoll < 0.75) reward = { type: 'shield', label: '+1 Escudo', icon: 'fa-shield-alt', color: 'text-lime-400' };
+          else reward = { type: 'life', label: '+1 Vida Extra', icon: 'fa-heart', color: 'text-rose-500' };
+          
+          setLastReward(reward);
+          
+          const newPowerups = { ...prev.powerups };
+          let newLives = prev.lives;
+          if (reward.type === 'hint') newPowerups.hints += 1;
+          else if (reward.type === 'cleaner') newPowerups.cleaners += 1;
+          else if (reward.type === 'shield') newPowerups.shields += 1;
+          else if (reward.type === 'life') {
+            newLives = Math.min(5, prev.lives + 1);
+            if (newLives === 5) unlockAchievement('unstoppable');
+          }
+
+          if (gameState.time > (currentLevel.timeLimit || 30) / 2 && !prev.isTutorialMode) {
+            // Check speedster logic if needed...
+          }
+
+          return { ...prev, isPlaying: false, lives: newLives, powerups: newPowerups, stats: newStats };
+        });
+        
+        if (errorWords.length === 0 && !gameState.isTutorialMode) unlockAchievement('perfectionist');
+        
+        setTimeout(() => { 
+          if (gameState.mode === 'CHALLENGE') startRandomChallenge(true); 
+          else setView(GameView.LEVEL_SELECT); 
+        }, 3000); 
+      }
+    } else {
+      setErrorWords(prev => [...prev, word.id]);
+      if (gameState.mode === 'PRACTICE' || gameState.isTutorialMode) {
+        setGameState(prev => ({ ...prev, time: Math.max(1, prev.time - 5) }));
+      } else {
+        if (gameState.powerups.shields > 0) setGameState(prev => ({ ...prev, powerups: { ...prev.powerups, shields: prev.powerups.shields - 1 } }));
+        else setGameState(prev => {
+          const newLives = prev.lives - 1;
+          if (newLives <= 0) { handleGameOver(); return { ...prev, lives: 0, time: 0 }; }
+          return { ...prev, lives: newLives, time: Math.max(1, prev.time - 5) };
+        });
+      }
     }
   };
 
@@ -237,13 +330,23 @@ const App: React.FC = () => {
     startGame(randomLevel, randomCategory, 'CHALLENGE', !isTransition);
   }, [communityLevels]);
 
-  const handleSaveScore = async () => {
-    if (!playerName.trim()) return;
-    setIsSavingScore(true);
-    await saveScore({ name: playerName, score: gameState.score });
-    setIsSavingScore(false);
-    setScoreSaved(true);
+  const handleGameOver = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setView(GameView.GAME_OVER);
+    setGameState(prev => ({ ...prev, isPlaying: false, isGameOver: true }));
   };
+
+  useEffect(() => {
+    if (gameState.isPlaying && gameState.time > 0) {
+      timerRef.current = setInterval(() => {
+        setGameState(prev => {
+          if (prev.time <= 1) { handleGameOver(); return { ...prev, time: 0 }; }
+          return { ...prev, time: prev.time - 1 };
+        });
+      }, 1000);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [gameState.isPlaying, gameState.time]);
 
   const usePowerup = (type: 'hint' | 'clean' | 'shield') => {
     if (!gameState.isPlaying || !currentLevel || !gameState.targetCategory) return;
@@ -264,88 +367,17 @@ const App: React.FC = () => {
     }
   };
 
-  const handleGameOver = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setView(GameView.GAME_OVER);
-    setGameState(prev => ({ ...prev, isPlaying: false, isGameOver: true }));
-  };
-
-  useEffect(() => {
-    if (gameState.isPlaying && gameState.time > 0) {
-      timerRef.current = setInterval(() => {
-        setGameState(prev => {
-          if (prev.time <= 1) { handleGameOver(); return { ...prev, time: 0 }; }
-          return { ...prev, time: prev.time - 1 };
-        });
-      }, 1000);
-    }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [gameState.isPlaying, gameState.time]);
-
-  const handleWordClick = (word: WordData) => {
-    if (!gameState.isPlaying || !currentLevel || !gameState.targetCategory) return;
-    if (foundWords.includes(word.id) || errorWords.includes(word.id) || cleanedWords.includes(word.id)) return;
-    if (word.category === gameState.targetCategory) {
-      const newFound = [...foundWords, word.id];
-      setFoundWords(newFound);
-      setGameState(prev => ({ ...prev, score: prev.score + 10, stats: { ...prev.stats, nounsFound: prev.stats.nounsFound + 1 } }));
-      if (gameState.stats.nounsFound + 1 >= 100) unlockAchievement('noun_expert');
-      const targetWordsCount = currentLevel.words.filter(w => w.category === gameState.targetCategory).length;
-      if (newFound.length === targetWordsCount) {
-        if (gameState.time > (currentLevel.timeLimit || 30) / 2) unlockAchievement('speedster');
-        const rewardRoll = Math.random();
-        let reward: Reward;
-        if (rewardRoll < 0.25) reward = { type: 'hint', label: '+1 Pista', icon: 'fa-lightbulb', color: 'text-cyan-400' };
-        else if (rewardRoll < 0.50) reward = { type: 'cleaner', label: '+1 Limpiar', icon: 'fa-broom', color: 'text-rose-400' };
-        else if (rewardRoll < 0.75) reward = { type: 'shield', label: '+1 Escudo', icon: 'fa-shield-alt', color: 'text-lime-400' };
-        else reward = { type: 'life', label: '+1 Vida Extra', icon: 'fa-heart', color: 'text-rose-500' };
-        setLastReward(reward);
-        setGameState(prev => {
-          const newPowerups = { ...prev.powerups };
-          let newLives = prev.lives;
-          if (reward.type === 'hint') newPowerups.hints += 1;
-          else if (reward.type === 'cleaner') newPowerups.cleaners += 1;
-          else if (reward.type === 'shield') newPowerups.shields += 1;
-          else if (reward.type === 'life') newLives = Math.min(5, prev.lives + 1);
-          return { ...prev, isPlaying: false, lives: newLives, powerups: newPowerups, stats: { ...prev.stats, levelsCompleted: prev.stats.levelsCompleted + 1 } };
-        });
-        unlockAchievement('first_steps');
-        setTimeout(() => { if (gameState.mode === 'CHALLENGE') startRandomChallenge(true); else setView(GameView.LEVEL_SELECT); }, 3000); 
-      }
-    } else {
-      setErrorWords(prev => [...prev, word.id]);
-      if (gameState.mode === 'PRACTICE' || gameState.isTutorialMode) {
-        setGameState(prev => ({ ...prev, time: Math.max(1, prev.time - 5) }));
-      } else {
-        if (gameState.powerups.shields > 0) setGameState(prev => ({ ...prev, powerups: { ...prev.powerups, shields: prev.powerups.shields - 1 } }));
-        else setGameState(prev => {
-          const newLives = prev.lives - 1;
-          if (newLives <= 0) { handleGameOver(); return { ...prev, lives: 0, time: 0 }; }
-          return { ...prev, lives: newLives, time: Math.max(1, prev.time - 5) };
-        });
-      }
-    }
-  };
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      const key = e.key;
       setKonamiProgress(prev => {
-        const next = [...prev, key];
+        const next = [...prev, e.key];
         const matchLength = next.length;
         const expected = KONAMI_CODE.slice(0, matchLength);
-        const isMatch = next.every((k, idx) => {
-           const targetKey = expected[idx];
-           if (targetKey.length === 1) return k.toLowerCase() === targetKey.toLowerCase();
-           return k === targetKey;
-        });
+        const isMatch = next.every((k, idx) => k.toLowerCase() === expected[idx].toLowerCase());
         if (isMatch) {
           if (matchLength === KONAMI_CODE.length) {
-            unlockAchievement('hidden_discoverer');
-            setShowKonamiEffect(true);
-            setView(GameView.EDITOR);
-            return [];
+            setShowKonamiEffect(true); setView(GameView.EDITOR); return [];
           }
           return next;
         }
@@ -358,14 +390,18 @@ const App: React.FC = () => {
 
   const LevelCard: React.FC<{ level: Level }> = ({ level }) => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
+    const doneCats = gameState.stats.completedLevels[level.id] || [];
     return (
       <div className={`rounded-2xl p-4 shadow-md border-b-2 transition-all hover:bg-indigo-50/50 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-50'}`}>
-         <h3 className={`text-md font-black mb-2 truncate ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
+         <div className="flex justify-between items-start mb-2">
+           <h3 className={`text-sm font-black truncate max-w-[80%] ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
+           {doneCats.length === cats.length && <i className="fas fa-check-circle text-green-500 text-xs"></i>}
+         </div>
          <div className="flex flex-wrap gap-1.5">
             {cats.map(cat => (
               <button 
                 key={cat} onClick={() => startGame(level, cat, 'PRACTICE', true)}
-                className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all shadow-sm active:scale-95 ${showKonamiEffect ? 'bg-slate-700 hover:bg-indigo-600 text-indigo-300 hover:text-white' : 'bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600'}`}
+                className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all shadow-sm active:scale-95 ${doneCats.includes(cat) ? 'bg-green-100 text-green-700 border border-green-200' : showKonamiEffect ? 'bg-slate-700 text-indigo-300' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'}`}
               >
                 {getPluralCategory(cat)}
               </button>
@@ -377,27 +413,26 @@ const App: React.FC = () => {
 
   const AccordionSection = ({ id, title, icon, levels, color }: { id: LevelGroup, title: string, icon: string, levels: Level[], color: string }) => {
     const isExpanded = expandedCategory === id;
+    const completedCount = levels.filter(l => gameState.stats.completedLevels[l.id]).length;
     return (
       <div className={`w-full rounded-3xl overflow-hidden transition-all duration-300 border-4 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
         <button onClick={() => setExpandedCategory(isExpanded ? null : id)} className={`w-full flex items-center justify-between p-6 md:p-8 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}>
           <div className="flex items-center gap-6">
-            <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-5xl shadow-lg transition-transform ${isExpanded ? 'scale-110' : ''} ${color} text-white`}>
+            <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-5xl shadow-lg ${color} text-white`}>
               <i className={`fas ${icon}`}></i>
             </div>
             <div>
               <h3 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
-              <p className={`text-xs md:text-sm font-bold opacity-70 mt-1 ${isExpanded ? 'opacity-50' : ''}`}>{levels.length} textos disponibles</p>
+              <p className="text-xs md:text-sm font-bold opacity-70 mt-1">{completedCount}/{levels.length} textos completados</p>
             </div>
           </div>
           <i className={`fas fa-chevron-down text-2xl md:text-4xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
         </button>
         {isExpanded && (
           <div className="p-6 pt-0 animate-in slide-in-from-top duration-300">
-            {levels.length === 0 ? <div className="text-center py-10 opacity-40 italic font-bold">No hay textos aún.</div> : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {levels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
-              </div>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {levels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
+            </div>
           </div>
         )}
       </div>
@@ -405,18 +440,19 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen w-full flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active konami-unlock-flash' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'}`}>
+    <div className={`min-h-screen w-full flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'}`}>
       {lastUnlocked && (
         <div className="fixed top-8 right-8 z-[100] bg-white p-4 rounded-2xl shadow-2xl border-4 border-yellow-400 animate-in slide-in-from-right duration-500 flex items-center space-x-4">
           <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center text-indigo-900 text-xl"><i className={`fas ${lastUnlocked.icon}`}></i></div>
-          <div><span className="block text-[10px] font-black text-yellow-600 uppercase tracking-widest text-nowrap">¡Logro!</span><span className="block text-lg font-black text-indigo-900 text-nowrap">{lastUnlocked.title}</span></div>
+          <div><span className="block text-[10px] font-black text-yellow-600 uppercase tracking-widest">¡Logro!</span><span className="block text-lg font-black text-indigo-900">{lastUnlocked.title}</span></div>
         </div>
       )}
+
       {view === GameView.MENU && (
         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 w-full max-w-4xl text-center">
           <div className="relative mb-8 md:mb-12 floating">
             <h1 className="text-6xl md:text-9xl font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] tracking-tighter select-none uppercase">GRAMMA<span className="text-yellow-300">CAT</span></h1>
-            <div className={`absolute -top-12 -right-12 text-6xl text-white rotate-12 transition-opacity ${showKonamiEffect ? 'opacity-60 text-purple-400' : 'opacity-20 hidden md:block'}`}><i className="fas fa-cat"></i></div>
+            <div className={`absolute -top-12 -right-12 text-6xl text-white rotate-12 opacity-20 hidden md:block`}><i className="fas fa-cat"></i></div>
           </div>
           <div className="flex flex-col md:flex-row gap-6 md:gap-10">
             <button onClick={() => setView(GameView.LEVEL_SELECT)} className={`group relative w-full md:w-72 h-40 md:h-72 rounded-[2rem] md:rounded-[3rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
@@ -428,17 +464,18 @@ const App: React.FC = () => {
               <span className={`text-2xl md:text-3xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO</span>
             </button>
           </div>
-          <div className="mt-12 flex flex-wrap justify-center gap-6">
-            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-10 py-5 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black border-2 border-yellow-500 shadow-xl text-lg md:text-xl transition-all hover:scale-105 active:scale-95"><i className="fas fa-list-ol mr-2"></i> RÁNKNG</button>
-            <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-10 py-5 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 text-lg md:text-xl shadow-xl backdrop-blur-sm transition-all hover:scale-105 active:scale-95"><i className="fas fa-trophy mr-2"></i> LOGROS</button>
+          <div className="mt-12 flex flex-wrap justify-center gap-8">
+            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-12 py-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-[2rem] font-black border-4 border-yellow-500 shadow-2xl text-xl md:text-2xl transition-all hover:scale-110 active:scale-95 flex items-center"><i className="fas fa-list-ol mr-3"></i> RÁNKING</button>
+            <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-12 py-6 bg-white/20 hover:bg-white/40 text-white rounded-[2rem] font-black border-4 border-white/30 text-xl md:text-2xl shadow-2xl backdrop-blur-md transition-all hover:scale-110 active:scale-95 flex items-center"><i className="fas fa-trophy mr-3"></i> LOGROS</button>
           </div>
         </div>
       )}
+
       {view === GameView.LEVEL_SELECT && (
         <div className="w-full max-w-5xl flex flex-col items-center animate-in slide-in-from-bottom duration-500 overflow-y-auto max-h-[95vh] custom-scrollbar p-4 md:p-6">
-          <div className="w-full flex justify-between items-center mb-8 md:mb-12 sticky top-0 bg-transparent z-10 backdrop-blur-sm py-2">
-            <button onClick={() => setView(GameView.MENU)} className="p-3 bg-white/20 text-white rounded-full hover:bg-white/40 transition-all shadow-lg"><i className="fas fa-arrow-left text-xl md:text-2xl"></i></button>
-            <h2 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter drop-shadow-md text-center">ELÍGE TU DESAFÍO</h2>
+          <div className="w-full flex justify-between items-center mb-8 sticky top-0 bg-transparent z-10 backdrop-blur-sm py-2">
+            <button onClick={() => setView(GameView.MENU)} className="p-3 bg-white/20 text-white rounded-full hover:bg-white/40 shadow-lg"><i className="fas fa-arrow-left text-xl"></i></button>
+            <h2 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter drop-shadow-md">ELÍGE TU DESAFÍO</h2>
             <div className="w-10"></div>
           </div>
           <div className="flex flex-col gap-6 w-full pb-10">
@@ -449,80 +486,66 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
       {view === GameView.PLAYING && currentLevel && gameState.targetCategory && (
         <div className={`w-full h-full flex flex-col items-center justify-start md:justify-center animate-in zoom-in duration-500 overflow-hidden relative ${tutorialStep !== null ? 'pt-10' : 'py-4'}`}>
-          {tutorialStep !== null && (
-            <TutorialSign 
-              text={tutorialSteps[tutorialStep].text} 
-              onNext={nextTutorialStep} 
-              position={tutorialSteps[tutorialStep].position} 
-              isMidnight={showKonamiEffect}
-            />
-          )}
-          
+          {tutorialStep !== null && <TutorialSign text={["¡Hola! Aquí verás qué palabra buscas.", "Controla tu tiempo, ¡vuela!", "Pierdes vida si fallas.", "¡Usa tus potenciadores!", "¡Suerte! Toca las palabras correctas."][tutorialStep]} onNext={nextTutorialStep} position={['category', 'time', 'lives', 'items', 'words'][tutorialStep] as any} isMidnight={showKonamiEffect} />}
           <GameHUD state={gameState} target={gameState.targetCategory} />
           <div className="w-full max-w-6xl relative flex-1 mx-2 flex flex-col items-center justify-center">
-            <div id="game-board" className={`w-full h-full rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 shadow-2xl border-b-8 flex flex-col justify-center overflow-hidden transition-all ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
-              <div className={`relative z-10 flex flex-wrap justify-center items-center gap-x-2 md:gap-x-4 gap-y-3 md:gap-y-6 font-black leading-tight h-full content-center ${gameFontSize} ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
+            <div id="game-board" className={`w-full h-full rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 shadow-2xl border-b-8 flex flex-col justify-center transition-all ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+              <div className={`relative flex flex-wrap justify-center items-center gap-x-2 md:gap-x-4 gap-y-3 md:gap-y-6 font-black h-full content-center text-3xl md:text-5xl ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
                 {currentLevel.words.map((w) => (
-                  <span key={w.id} onClick={() => handleWordClick(w)} className={`cursor-pointer px-4 md:px-5 py-1 md:py-2 rounded-2xl md:rounded-[2rem] transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-[0_5px_0_rgb(22,163,74)] -rotate-2 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white shadow-lg rotate-2 scale-105 opacity-40 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 md:ring-8 ring-yellow-400 animate-pulse shadow-yellow-200' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
+                  <span key={w.id} onClick={() => handleWordClick(w)} className={`cursor-pointer px-4 md:px-5 py-1 md:py-2 rounded-2xl md:rounded-[2rem] transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-lg -rotate-2 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-40 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-20 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 ring-yellow-400 animate-pulse' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:bg-slate-800 hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
                 ))}
               </div>
             </div>
-            
-            {/* Título de la obra debajo del texto */}
-            <p className={`mt-6 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] italic opacity-50 ${showKonamiEffect ? 'text-indigo-300' : 'text-indigo-900'}`}>
-              {currentLevel.title}
-            </p>
-
+            <p className={`mt-6 text-[10px] md:text-sm font-black uppercase italic opacity-50 ${showKonamiEffect ? 'text-indigo-300' : 'text-indigo-900'}`}>{currentLevel.title}</p>
             {!gameState.isPlaying && !gameState.isGameOver && lastReward && (
-              <div className="fixed inset-0 flex items-center justify-center z-[200] animate-in fade-in zoom-in duration-500 px-4 py-8 overflow-y-auto overflow-x-hidden">
-                <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-sm pointer-events-auto"></div>
-                <div className="relative bg-white p-6 md:p-14 rounded-[3.5rem] md:rounded-[4.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.5)] border-[8px] md:border-[12px] border-indigo-500 text-center scale-100 transform rotate-[-1deg] max-w-full my-auto flex flex-col items-center pointer-events-auto min-h-0">
-                   <h2 className="text-3xl md:text-6xl font-black text-indigo-900 mb-4 md:mb-6 italic tracking-tighter uppercase leading-none">¡GENIAL!</h2>
-                   <div className="bg-indigo-50 p-6 md:p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-4 md:mb-6 flex flex-col items-center min-w-[200px] md:min-w-[280px]">
-                      <div className={`text-6xl md:text-9xl mb-4 animate-bounce ${lastReward.color}`}><i className={`fas ${lastReward.icon}`}></i></div>
-                      <span className={`text-2xl md:text-5xl font-black italic tracking-tight ${lastReward.color} uppercase`}>{lastReward.label}</span>
+              <div className="fixed inset-0 flex items-center justify-center z-[200] animate-in zoom-in duration-500">
+                <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-sm"></div>
+                <div className="relative bg-white p-14 rounded-[4.5rem] shadow-2xl border-[12px] border-indigo-500 text-center">
+                   <h2 className="text-6xl font-black text-indigo-900 mb-6 italic uppercase">¡GENIAL!</h2>
+                   <div className="bg-indigo-50 p-10 rounded-[2.5rem] border-4 border-dashed border-indigo-200 mb-6 flex flex-col items-center min-w-[280px]">
+                      <div className={`text-9xl mb-4 animate-bounce ${lastReward.color}`}><i className={`fas ${lastReward.icon}`}></i></div>
+                      <span className={`text-5xl font-black italic ${lastReward.color} uppercase`}>{lastReward.label}</span>
                    </div>
-                   <div className="flex flex-col items-center w-full">
-                      <p className="text-slate-400 font-black animate-pulse text-[10px] md:text-sm uppercase tracking-widest">Siguiente reto en camino...</p>
-                      <div className="mt-4 w-40 md:w-48 h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500 animate-[loading_3s_linear]"></div>
-                      </div>
+                   <div className="mt-4 w-48 h-3 bg-slate-100 rounded-full overflow-hidden mx-auto">
+                     <div className="h-full bg-indigo-500 animate-[loading_3s_linear]"></div>
                    </div>
                 </div>
               </div>
             )}
           </div>
-          <div id="powerups-bar" className="mt-4 md:mt-8 flex gap-3 md:gap-8 flex-wrap justify-center px-4 pb-4 p-2 rounded-3xl">
-            {[ { type: 'hint' as const, icon: 'fa-lightbulb', label: 'PISTA', count: gameState.powerups.hints, color: 'cyan' }, { type: 'clean' as const, icon: 'fa-broom', label: 'LIMPIAR', count: gameState.powerups.cleaners, color: 'rose' }, { type: 'shield' as const, icon: 'fa-shield-alt', label: 'ESCUDO', count: gameState.powerups.shields, color: 'lime' }, ].map((p) => (
-              <button key={p.type} onClick={() => p.type !== 'shield' ? usePowerup(p.type) : null} disabled={p.count <= 0} className={`group relative w-16 h-16 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[1.5rem] md:rounded-[2rem] shadow-lg border-b-4 md:border-b-8 transition-all active:scale-95 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500 hover:bg-${p.color}-200`) : 'bg-slate-700 border-slate-800 opacity-50'}`}><i className={`fas ${p.icon} text-xl md:text-4xl mb-0.5 md:mb-1 ${showKonamiEffect ? `text-${p.color}-200` : `text-${p.color}-800`}`}></i><span className={`text-[8px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : `text-${p.color}-900`}`}>{p.label} ({p.count})</span></button>
+          <div id="powerups-bar" className="mt-4 md:mt-8 flex gap-3 md:gap-8 justify-center pb-4">
+            {[ { type: 'hint' as const, icon: 'fa-lightbulb', label: 'PISTA', count: gameState.powerups.hints, color: 'cyan' }, { type: 'clean' as const, icon: 'fa-broom', label: 'LIMPIAR', count: gameState.powerups.cleaners, color: 'rose' }, { type: 'shield' as const, icon: 'fa-shield-alt', label: 'ESCUDO', count: gameState.powerups.shields, color: 'lime' } ].map((p) => (
+              <button key={p.type} onClick={() => usePowerup(p.type as any)} disabled={p.count <= 0} className={`w-16 h-16 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-3xl shadow-lg border-b-8 transition-all active:scale-95 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500`) : 'opacity-50 grayscale'}`}><i className={`fas ${p.icon} text-xl md:text-4xl mb-1`}></i><span className="text-[8px] md:text-xs font-black uppercase">{p.label} ({p.count})</span></button>
             ))}
-            <button onClick={() => setView(GameView.MENU)} className={`w-16 h-16 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-[1.5rem] md:rounded-[2rem] shadow-lg border-b-4 md:border-b-8 transition-all active:scale-95 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}><i className="fas fa-home text-xl md:text-4xl text-indigo-400 mb-0.5 md:mb-1"></i><span className={`text-[8px] md:text-xs font-black uppercase ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>SALIR</span></button>
+            <button onClick={() => setView(GameView.MENU)} className="w-16 h-16 md:w-32 md:h-32 flex flex-col items-center justify-center rounded-3xl shadow-lg border-b-8 bg-white border-slate-300"><i className="fas fa-home text-xl md:text-4xl text-indigo-400 mb-1"></i><span className="text-[8px] md:text-xs font-black uppercase">SALIR</span></button>
           </div>
         </div>
       )}
+
       {view === GameView.GAME_OVER && (
-        <div className={`text-center p-8 md:p-16 rounded-[3rem] md:rounded-[4rem] shadow-2xl border-x-4 md:border-x-8 border-b-4 md:border-b-8 border-rose-500 animate-in zoom-in duration-300 w-full max-lg mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
-          <i className="fas fa-skull text-6xl md:text-8xl text-rose-500 mb-6 block"></i>
-          <h2 className={`text-5xl md:text-7xl font-black italic tracking-tighter mb-4 ${showKonamiEffect ? 'text-white' : 'text-slate-900'}`}>GAME OVER</h2>
-          <div className="mb-8 p-4 md:p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100 flex flex-col items-center">
-            <span className="text-4xl md:text-6xl font-black text-indigo-600 mb-2">{gameState.score}</span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PUNTOS ACUMULADOS</span>
+        <div className={`text-center p-8 md:p-16 rounded-[4rem] shadow-2xl border-b-8 border-rose-500 animate-in zoom-in w-full max-lg mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
+          <i className="fas fa-skull text-8xl text-rose-500 mb-6 block"></i>
+          <h2 className="text-7xl font-black italic mb-4">GAME OVER</h2>
+          <div className="mb-8 p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100">
+            <span className="text-6xl font-black text-indigo-600 mb-2">{gameState.score}</span>
+            <span className="text-[10px] font-bold text-slate-400 block uppercase">PUNTOS ACUMULADOS</span>
             {gameState.score > 0 && !scoreSaved && (
-              <div className="w-full flex flex-col items-center space-y-4 animate-in slide-in-from-bottom duration-500 mt-6">
-                <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value.substring(0, 15))} placeholder="Escribe tu nombre..." className="w-full p-3 rounded-xl border-2 border-indigo-200 outline-none focus:border-indigo-500 font-bold text-center" />
-                <button onClick={handleSaveScore} disabled={!playerName.trim() || isSavingScore} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50">GUARDAR PUNTUACIÓN</button>
+              <div className="mt-6 flex flex-col gap-4">
+                <input type="text" value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Tu nombre..." className="p-3 rounded-xl border-2 border-indigo-200 text-center font-bold" />
+                <button onClick={async () => { setIsSavingScore(true); await saveScore({ name: playerName, score: gameState.score }); setScoreSaved(true); setIsSavingScore(false); }} disabled={!playerName || isSavingScore} className="py-3 bg-indigo-600 text-white rounded-xl font-black">GUARDAR</button>
               </div>
             )}
-            {scoreSaved && <div className="text-green-500 font-black flex items-center mt-4"><i className="fas fa-check-circle mr-2"></i> PUNTUACIÓN REGISTRADA</div>}
           </div>
-          <button onClick={() => setView(GameView.MENU)} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-xl font-black shadow-lg transition-all active:scale-95">MENÚ PRINCIPAL</button>
+          <button onClick={() => setView(GameView.MENU)} className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-xl font-black">VOLVER AL MENÚ</button>
         </div>
       )}
+      
       {view === GameView.ACHIEVEMENTS && <AchievementsModal achievements={achievements} onClose={() => setView(GameView.MENU)} />}
       {view === GameView.LEADERBOARD && <Leaderboard isMidnight={showKonamiEffect} onClose={() => setView(GameView.MENU)} />}
-      {view === GameView.EDITOR && <Editor onClose={() => setView(GameView.MENU)} onSave={(newLevel) => { setCommunityLevels(prev => [newLevel, ...prev]); setView(GameView.MENU); }} />}
+      {view === GameView.EDITOR && <Editor onClose={() => setView(GameView.MENU)} onSave={(newLevel) => { unlockAchievement('architect'); setCommunityLevels(prev => [newLevel, ...prev]); setView(GameView.MENU); }} />}
     </div>
   );
 };

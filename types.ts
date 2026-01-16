@@ -62,7 +62,11 @@ export interface GameState {
   };
   stats: {
     nounsFound: number;
-    levelsCompleted: number;
+    levelsCompleted: number; // General (inc. tutorial)
+    totalTextsSuccessful: number; // Excluye tutorial
+    challengeTextsCount: number;
+    tutorialCompleted: boolean;
+    completedLevels: Record<number, WordClass[]>; // Mapeo nivel -> categorías superadas
   };
   isTutorialMode?: boolean;
 }
