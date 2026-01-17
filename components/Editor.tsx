@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { WordClass, Level, WordData } from '../types';
 import { analyzeTextWithAI } from '../services/geminiService';
 import { saveLevelLocally } from '../services/supabaseService';
@@ -145,7 +145,7 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
                 <span className={`font-black text-sm uppercase tracking-tighter ${isTooLong ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`}>{wordCount} / {MAX_WORDS} PALABRAS</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <button onClick={handleAISuggestion} disabled={isAnalyzing || !text.trim() || isTooLong} className="py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[1.5rem] font-black disabled:opacity-50 shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center text-lg italic tracking-tighter">
+                <button onClick={handleAISuggestion} disabled={isAnalyzing || !text.trim() || isTooLong} className="py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[1.5rem] font-black disabled:opacity-50 shadow-xl transition-all active:scale-95 flex items-center justify-center text-lg italic tracking-tighter">
                   {isAnalyzing ? <i className="fas fa-spinner fa-spin mr-3"></i> : <i className="fas fa-magic mr-3"></i>}
                   ANÁLISIS MÁGICO CON IA
                 </button>
@@ -177,7 +177,7 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
                     <i className={`fas ${copied ? 'fa-check' : 'fa-code'} mr-2`}></i>
                     {copied ? '¡COPIADO!' : 'EXPORTAR'}
                   </button>
-                  <button onClick={() => handleSave(false)} className="flex-1 md:flex-none px-10 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-200 active:scale-95 transition-all tracking-tighter italic">
+                  <button onClick={() => handleSave(false)} className="flex-1 md:flex-none px-10 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all tracking-tighter italic">
                     GUARDAR Y JUGAR YA
                   </button>
                 </div>
