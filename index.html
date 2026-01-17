@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GrammatiCat: El Desafío de las Palabras</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,66 +16,40 @@
             overflow: hidden;
             user-select: none;
             transition: background-color 0.8s ease;
-            height: 100vh;
+            /* Usamos dvh para asegurar que ocupe todo el espacio real del navegador */
+            height: 100dvh;
             width: 100vw;
+            margin: 0;
+            padding: 0;
         }
         
-        /* Efecto Konami: Modo Midnight */
+        #root {
+            height: 100dvh;
+            width: 100vw;
+        }
+
         .konami-active {
             background-color: #020617 !important;
         }
         
-        .konami-active .bg-white {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-            border-color: #334155 !important;
-        }
-        
-        .konami-active .text-indigo-900, 
-        .konami-active .text-slate-800,
-        .konami-active .text-slate-900 {
-            color: #f1f5f9 !important;
-        }
-
-        .konami-active .bg-indigo-50 {
-            background-color: #1e293b !important;
-        }
-
-        .konami-active .border-indigo-100 {
-            border-color: #334155 !important;
-        }
-
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+            width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.5);
+            background: rgba(99, 102, 241, 0.3);
             border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.8);
         }
         
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-5px); }
             100% { transform: translateY(0px); }
         }
         .floating {
             animation: float 3s ease-in-out infinite;
-        }
-
-        /* Animación de entrada para el modo secreto */
-        .konami-unlock-flash {
-            animation: flash 0.5s ease-out;
-        }
-        @keyframes flash {
-            0% { filter: brightness(3); }
-            100% { filter: brightness(1); }
         }
 
         @keyframes loading {
@@ -104,13 +78,23 @@
             }
         }
         
-        /* Ajustes de escala para pantallas muy pequeñas */
-        @media screen and (max-height: 400px) {
-            .game-board-container {
-                padding: 1rem !important;
+        /* Ajustes de optimización para landscape móvil (poca altura) */
+        @media screen and (max-height: 480px) {
+            .hud-container {
+                padding: 0.25rem !important;
+                margin-bottom: 0.25rem !important;
             }
-            .hud-compact {
+            .powerup-btn {
+                width: 3.5rem !important;
+                height: 3.5rem !important;
+            }
+            .word-bubble {
                 padding: 0.25rem 0.5rem !important;
+                font-size: 1.25rem !important;
+            }
+            .main-title {
+                font-size: 3rem !important;
+                margin-bottom: 1rem !important;
             }
         }
     </style>
@@ -127,11 +111,12 @@
     }
     </script>
 </head>
-<body class="bg-indigo-50">
+<body>
     <div id="orientation-overlay">
         <i class="fas fa-redo fa-4x mb-6 animate-bounce"></i>
         <h2 class="text-3xl font-black italic mb-2 uppercase tracking-tighter">¡Gira tu pantalla!</h2>
-        <p class="text-lg font-bold opacity-80">GrammatiCat se disfruta mejor en horizontal en dispositivos móviles.</p>
+        <p class="text-lg font-bold opacity-80 mb-6">GrammatiCat se disfruta mejor en horizontal.</p>
+        <p class="text-sm opacity-60">Una vez girado, toca en "Pantalla Completa" para jugar mejor.</p>
     </div>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
