@@ -15,7 +15,7 @@
             background: #f0f4f8;
             overflow: hidden;
             user-select: none;
-            transition: background-color 0.8s ease;
+            transition: background-color-0.8s ease;
             height: 100dvh;
             width: 100vw;
             margin: 0;
@@ -53,7 +53,7 @@
             animation: float 3s ease-in-out infinite;
         }
 
-        /* Orientación Overlay */
+        /* Orientación Overlay Inteligente */
         #orientation-overlay {
             display: none;
             position: fixed;
@@ -66,36 +66,41 @@
             justify-content: center;
             text-align: center;
             padding: 1.5rem;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
         }
 
-        @media screen and (max-width: 900px) and (orientation: portrait) {
+        /* Mostramos el overlay en vertical SIEMPRE */
+        @media screen and (orientation: portrait) {
             #orientation-overlay {
                 display: flex;
             }
+        }
+
+        /* En horizontal, si el JS detecta que no hay pantalla completa, forzamos el overlay */
+        body.needs-fullscreen #orientation-overlay {
+            display: flex !important;
+            background: rgba(79, 70, 229, 0.9);
         }
         
         /* Ajustes de optimización para landscape móvil (poca altura) */
         @media screen and (max-height: 480px) {
             .hud-container {
                 padding: 0.1rem !important;
-                margin-bottom: 0.1rem !important;
+                margin-bottom: 0.05rem !important;
             }
             .powerup-btn {
-                width: 3.2rem !important;
-                height: 3.2rem !important;
+                width: 3rem !important;
+                height: 3rem !important;
             }
             .word-bubble {
-                padding: 0.3rem 0.8rem !important;
-                font-size: 1.6rem !important; /* Letra bien grande para móvil horizontal */
+                padding: 0.4rem 1rem !important;
+                font-size: 1.8rem !important; /* TEXTO MUCHO MÁS GRANDE */
                 line-height: 1;
+                margin: 0.2rem !important;
             }
             .main-title {
-                font-size: 3rem !important;
+                font-size: 3.5rem !important;
                 margin-bottom: 0.5rem !important;
-            }
-            .menu-btn-container {
-                height: 5rem !important;
             }
         }
     </style>
@@ -114,22 +119,54 @@
 </head>
 <body>
     <div id="orientation-overlay">
-        <i class="fas fa-mobile-alt fa-3x mb-4 rotate-90 animate-pulse"></i>
-        <h2 class="text-3xl font-black italic mb-2 uppercase tracking-tighter">¡Gira tu pantalla!</h2>
-        <p class="text-base font-bold opacity-80 mb-6 max-w-xs">GrammatiCat necesita espacio horizontal para que las letras se vean grandes y claras.</p>
+        <div id="portrait-msg" class="contents">
+            <i class="fas fa-mobile-alt fa-3x mb-4 rotate-90 animate-pulse"></i>
+            <h2 class="text-3xl font-black italic mb-2 uppercase tracking-tighter">¡Gira tu móvil!</h2>
+            <p class="text-base font-bold opacity-80 mb-6 max-w-xs text-center">Para ver las palabras en grande, el juego necesita estar en horizontal.</p>
+        </div>
         
-        <button id="overlay-fs-btn" class="px-8 py-5 bg-yellow-400 text-indigo-900 rounded-[2rem] font-black text-sm uppercase shadow-2xl flex items-center hover:scale-105 active:scale-95 transition-all">
-            <i class="fas fa-expand mr-2"></i> Pantalla Completa y Jugar
+        <button id="overlay-fs-btn" class="group px-10 py-6 bg-yellow-400 text-indigo-900 rounded-[2.5rem] font-black text-lg uppercase shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col items-center hover:scale-105 active:scale-95 transition-all">
+            <span class="flex items-center mb-1"><i class="fas fa-expand-arrows-alt mr-3 text-2xl group-hover:rotate-45 transition-transform"></i> ACTIVAR MODO JUEGO</span>
+            <span class="text-[10px] opacity-60 font-black tracking-widest">(PANTALLA COMPLETA)</span>
         </button>
-        <p class="text-[10px] mt-6 opacity-40 uppercase font-black tracking-widest">Actívalo y luego gira el dispositivo</p>
+        
+        <p class="text-[9px] mt-8 opacity-40 uppercase font-black tracking-[0.2em]">GrammatiCat: Desafío Lingüístico</p>
     </div>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
     <script>
-        // Lógica de ayuda para el botón del overlay (necesita estar fuera de React para el gesto inmediato)
-        document.getElementById('overlay-fs-btn').addEventListener('click', () => {
-            document.documentElement.requestFullscreen().catch(() => {});
+        const btn = document.getElementById('overlay-fs-btn');
+        const overlay = document.getElementById('orientation-overlay');
+        const portraitMsg = document.getElementById('portrait-msg');
+
+        function updateUI() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isFullscreen = !!document.fullscreenElement;
+            
+            if (isPortrait) {
+                portraitMsg.style.display = 'contents';
+                document.body.classList.remove('needs-fullscreen');
+                // Salida automática al girar a vertical
+                if (isFullscreen) document.exitFullscreen().catch(() => {});
+            } else {
+                portraitMsg.style.display = 'none';
+                if (!isFullscreen) {
+                    document.body.classList.add('needs-fullscreen');
+                } else {
+                    document.body.classList.remove('needs-fullscreen');
+                }
+            }
+        }
+
+        btn.addEventListener('click', () => {
+            document.documentElement.requestFullscreen()
+                .then(() => document.body.classList.remove('needs-fullscreen'))
+                .catch(() => {});
         });
+
+        window.addEventListener('resize', updateUI);
+        document.addEventListener('fullscreenchange', updateUI);
+        updateUI();
     </script>
 </body>
 </html>
