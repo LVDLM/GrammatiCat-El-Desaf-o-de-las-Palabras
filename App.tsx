@@ -464,6 +464,9 @@ const App: React.FC = () => {
   };
 
   const missedWords = getMissedWords();
+  const categoryLabel = gameState.targetCategory ? getPluralCategory(gameState.targetCategory) : '';
+  const verb = missedWords.length === 1 ? 'es' : 'son';
+  const missedWordsHeader = `También ${verb} ${categoryLabel}:`;
 
   return (
     <div className={`min-h-[100dvh] w-full flex flex-col items-center justify-start py-4 md:py-8 lg:py-12 p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'} relative overflow-x-hidden`}>
@@ -602,7 +605,7 @@ const App: React.FC = () => {
               {/* MISSED WORDS BOX */}
               <div className={`p-3 md:p-6 lg:p-10 rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] border-2 lg:border-4 flex flex-col transition-all overflow-hidden ${missedWords.length > 0 ? (showKonamiEffect ? 'bg-indigo-950/20 border-indigo-900' : 'bg-indigo-50 border-indigo-100') : 'bg-emerald-50 border-emerald-100'}`}>
                 <h3 className="text-[9px] md:text-xs lg:text-2xl font-black text-indigo-400 uppercase tracking-wider mb-2 lg:mb-6">
-                  {missedWords.length > 0 ? 'NO ENCONTRADAS' : '¡PERFECTO!'}
+                  {missedWords.length > 0 ? missedWordsHeader : '¡PERFECTO!'}
                 </h3>
                 
                 <div className="flex flex-wrap gap-1 md:gap-2 lg:gap-4 justify-center items-center overflow-y-auto custom-scrollbar flex-1 content-center p-1">
