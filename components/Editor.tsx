@@ -56,21 +56,15 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
     try {
       const result = await analyzeTextWithAI(text);
       if (result && result.length > 0) {
-        // Obtenemos las palabras originales del texto de entrada
         const originalWords = text.trim().split(/\s+/);
-        
-        // Mapeamos los resultados de la IA a las palabras originales que sí tienen puntuación
         const mappedTokens = originalWords.map((origWord, i) => {
-          // Intentamos encontrar la palabra correspondiente en el resultado de la IA (por índice)
           const suggestion = result[i];
-          
           return {
-            text: origWord, // IMPORTANTE: Usamos la palabra original con su puntuación
+            text: origWord,
             category: suggestion ? suggestion.category as WordClass : null as any,
             id: `ai-${i}-${Date.now()}`
           };
         });
-        
         setTokens(mappedTokens);
         setStep('TAGGING');
       } else {
@@ -145,7 +139,7 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
               </div>
               <div className="flex-1 flex flex-col space-y-1">
                 <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Cuerpo del texto</label>
-                <textarea value={text} onChange={e => setText(e.target.value)} className={`flex-1 w-full p-6 rounded-[2rem] border-2 outline-none font-medium leading-relaxed resize-none text-xl ${isMidnight ? 'bg-slate-800 border-slate-700 text-white' : 'bg-indigo-50 border-indigo-100'} ${isTooLong ? 'border-rose-400 ring-4 ring-rose-50' : ''}`} placeholder="Escribe o pega el texto. No te preocupes por los signos de puntuación, se mantendrán intactos..." />
+                <textarea value={text} onChange={e => setText(e.target.value)} className={`flex-1 w-full p-6 rounded-[2rem] border-2 outline-none font-medium leading-relaxed resize-none text-xl ${isMidnight ? 'bg-slate-800 border-slate-700 text-white' : 'bg-indigo-50 border-indigo-100'} ${isTooLong ? 'border-rose-400 ring-4 ring-rose-50' : ''}`} placeholder="Escribe o pega el texto..." />
               </div>
               <div className="flex justify-between items-center px-2">
                 <span className={`font-black text-sm uppercase tracking-tighter ${isTooLong ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`}>{wordCount} / {MAX_WORDS} PALABRAS</span>
@@ -168,9 +162,9 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
                 ))}
               </div>
               <div className={`flex-1 overflow-y-auto p-8 rounded-[2.5rem] border-2 shadow-inner custom-scrollbar ${isMidnight ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100'}`}>
-                <div className="flex flex-wrap gap-x-3 gap-y-5 justify-center content-start">
+                <div className="flex flex-wrap gap-x-2 gap-y-3 justify-center content-start">
                   {tokens.map((token) => (
-                    <span key={token.id} onClick={() => toggleWordCategory(token.id)} className={`cursor-pointer px-4 py-2 rounded-2xl text-xl md:text-3xl font-black transition-all transform hover:scale-110 active:scale-90 select-none ${token.category ? `${CATEGORY_COLORS[token.category]} text-white shadow-xl -rotate-1` : isMidnight ? 'text-white' : 'text-slate-700 hover:bg-white hover:shadow-lg'}`}>
+                    <span key={token.id} onClick={() => toggleWordCategory(token.id)} className={`cursor-pointer px-3 py-1 rounded-xl text-lg md:text-3xl font-black transition-all transform hover:scale-110 active:scale-90 select-none ${token.category ? `${CATEGORY_COLORS[token.category]} text-white shadow-xl -rotate-1` : isMidnight ? 'text-white' : 'text-slate-700 hover:bg-white hover:shadow-lg'}`}>
                       {token.text}
                     </span>
                   ))}

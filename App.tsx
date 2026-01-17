@@ -313,15 +313,50 @@ const App: React.FC = () => {
     const allAvailable = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS, ...communityLevels].filter(l => l && l.words);
     if (allAvailable.length === 0) return;
     
-    const randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
+    let randomLevel: Level;
     let category: WordClass;
     
+    // Función auxiliar para verificar si un nivel tiene una categoría
+    const hasCategory = (level: Level, cat: WordClass) => {
+       return level.words.some(w => {
+          const wClean = w.text.toLowerCase().replace(/[.,;:!?]/g, '');
+          const wIsContr = wClean === 'al' || wClean === 'del';
+          return w.category === cat || (wIsContr && (cat === WordClass.PREPOSICION || cat === WordClass.DETERMINANTE));
+       });
+    };
+
     if (mode === 'CHALLENGE_PROGRESSIVE') {
       const step = isTransition ? gameState.challengeStep + 1 : 0;
       category = CHALLENGE_PROGRESSION[step % CHALLENGE_PROGRESSION.length];
+      
+      // FILTRADO CRÍTICO: Solo niveles que tengan la categoría buscada
+      const validLevels = allAvailable.filter(l => hasCategory(l, category));
+      
+      if (validLevels.length > 0) {
+        randomLevel = validLevels[Math.floor(Math.random() * validLevels.length)];
+      } else {
+        // Fallback de emergencia si ningún nivel tiene la categoría del paso actual
+        randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
+        const availableCats = Array.from(new Set(randomLevel.words.map(w => w.category))) as WordClass[];
+        category = availableCats[0];
+      }
     } else {
-      const categories = Array.from(new Set(randomLevel.words.map(w => w.category))) as WordClass[];
-      category = categories[Math.floor(Math.random() * categories.length)] || WordClass.SUSTANTIVO;
+      // Modo Aleatorio: Primero elegimos nivel, luego una categoría que SEGURO esté en él
+      randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
+      const categoriesInLevel = Array.from(new Set(randomLevel.words.map(w => w.category))) as WordClass[];
+      
+      // Consideramos contracciones para preposiciones y determinantes si existen al/del
+      const hasContr = randomLevel.words.some(w => {
+         const wc = w.text.toLowerCase().replace(/[.,;:!?]/g, '');
+         return wc === 'al' || wc === 'del';
+      });
+      
+      if (hasContr) {
+        if (!categoriesInLevel.includes(WordClass.PREPOSICION)) categoriesInLevel.push(WordClass.PREPOSICION);
+        if (!categoriesInLevel.includes(WordClass.DETERMINANTE)) categoriesInLevel.push(WordClass.DETERMINANTE);
+      }
+      
+      category = categoriesInLevel[Math.floor(Math.random() * categoriesInLevel.length)] || WordClass.SUSTANTIVO;
     }
     
     startGame(randomLevel, category, mode, !isTransition);
@@ -513,10 +548,10 @@ const App: React.FC = () => {
           </div>
           
           <div className="w-full flex flex-1 flex-col items-stretch justify-center gap-4 lg:gap-10 overflow-hidden px-2 lg:px-10">
-            <div id="game-board" className={`flex-1 rounded-[1.5rem] md:rounded-[3rem] lg:rounded-[5rem] p-4 md:p-8 lg:p-20 shadow-2xl border-b-4 lg:border-b-12 flex flex-col justify-center transition-all overflow-y-auto custom-scrollbar ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
-              <div className={`relative flex flex-wrap justify-center items-center gap-3 md:gap-5 lg:gap-12 font-black content-center text-3xl md:text-6xl lg:text-8xl ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
+            <div id="game-board" className={`flex-1 rounded-[1.5rem] md:rounded-[3rem] lg:rounded-[5rem] p-4 md:p-8 lg:p-14 shadow-2xl border-b-4 lg:border-b-12 flex flex-col justify-center transition-all overflow-y-auto custom-scrollbar ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+              <div className={`relative flex flex-wrap justify-center items-center gap-2 md:gap-4 lg:gap-5 font-black content-center text-2xl md:text-4xl lg:text-6xl leading-tight ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
                 {currentLevel.words.map((w) => (
-                  <span key={w.id} onClick={() => handleWordClick(w)} className={`word-bubble cursor-pointer px-4 py-2 md:px-6 md:py-3 lg:px-10 lg:py-6 rounded-2xl md:rounded-3xl lg:rounded-[3rem] transition-all duration-300 transform select-none shadow-sm hover:shadow-xl ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-2xl -rotate-2 scale-110 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-30 pointer-events-none scale-95' : ''} ${cleanedWords.includes(w.id) ? 'opacity-10 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-2 md:ring-4 lg:ring-8 ring-yellow-400 animate-pulse shadow-[0_0_30px_rgba(250,204,21,0.5)]' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
+                  <span key={w.id} onClick={() => handleWordClick(w)} className={`word-bubble cursor-pointer px-3 py-1.5 md:px-5 md:py-2.5 lg:px-7 lg:py-3.5 rounded-2xl md:rounded-3xl lg:rounded-[2.5rem] transition-all duration-300 transform select-none shadow-sm hover:shadow-xl ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-2xl -rotate-2 scale-110 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-30 pointer-events-none scale-95' : ''} ${cleanedWords.includes(w.id) ? 'opacity-10 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-2 md:ring-4 lg:ring-8 ring-yellow-400 animate-pulse shadow-[0_0_30px_rgba(250,204,21,0.5)]' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
                 ))}
               </div>
             </div>
