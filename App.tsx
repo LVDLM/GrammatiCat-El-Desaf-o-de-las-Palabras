@@ -118,6 +118,7 @@ const App: React.FC = () => {
   const [expandedCategory, setExpandedCategory] = useState<LevelGroup | null>(null);
   const [tutorialStep, setTutorialStep] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [konamiProgress, setKonamiProgress] = useState(0);
   
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedStats = localStorage.getItem('grammaticat_stats');
@@ -157,11 +158,43 @@ const App: React.FC = () => {
   const [lastUnlocked, setLastUnlocked] = useState<Achievement | null>(null);
   const timerRef = useRef<any>(null);
 
+  // Konami Code Implementation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key;
+      const expectedKey = KONAMI_CODE[konamiProgress];
+
+      if (key.toLowerCase() === expectedKey.toLowerCase()) {
+        const nextProgress = konamiProgress + 1;
+        if (nextProgress === KONAMI_CODE.length) {
+          setShowKonamiEffect(true);
+          setView(GameView.EDITOR);
+          setKonamiProgress(0);
+        } else {
+          setKonamiProgress(nextProgress);
+        }
+      } else {
+        setKonamiProgress(0);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [konamiProgress]);
+
   useEffect(() => {
     const fsHandler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', fsHandler);
     return () => document.removeEventListener('fullscreenchange', fsHandler);
   }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   useEffect(() => {
     if (showKonamiEffect) document.body.classList.add('konami-active');
@@ -177,7 +210,7 @@ const App: React.FC = () => {
         try {
           const localUserLevels = await fetchCommunityLevels();
           setCommunityLevels(localUserLevels || []);
-        } catch (e) { console.error("Failed to load levels", e); }
+        } catch (e) { console.error("Failed to load niveles", e); }
       };
       loadCommunity();
     }
@@ -501,10 +534,13 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-4 lg:gap-10">
+          <div className="flex flex-wrap justify-center gap-3 lg:gap-10 max-w-5xl items-center">
             <button onClick={() => setView(GameView.LEADERBOARD)} className="px-6 py-4 lg:px-12 lg:py-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-yellow-500 shadow-xl text-xs md:text-sm lg:text-xl flex items-center"><i className="fas fa-list-ol mr-2 lg:mr-4"></i> RÁNKING</button>
             <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-6 py-4 lg:px-12 lg:py-6 bg-white/20 hover:bg-white/40 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-white/30 text-xs md:text-sm lg:text-xl shadow-xl backdrop-blur-md flex items-center"><i className="fas fa-trophy mr-2 lg:mr-4"></i> LOGROS</button>
-            <button onClick={() => setIsFullscreen(!isFullscreen)} className="px-6 py-4 lg:px-12 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-indigo-700 text-xs md:text-sm lg:text-xl flex items-center"><i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} mr-2 lg:mr-4`}></i> {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}</button>
+            <button onClick={toggleFullscreen} className="px-6 py-4 lg:px-12 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-indigo-700 text-xs md:text-sm lg:text-xl flex items-center shadow-xl">
+              <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} mr-2 lg:mr-4`}></i> {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}
+            </button>
+            <button onClick={() => setView(GameView.ABOUT)} className="px-5 py-3 lg:px-10 lg:py-5 bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-indigo-700 text-[10px] md:text-xs lg:text-lg flex items-center shadow-lg"><i className="fas fa-info-circle mr-2 lg:mr-4"></i> SOBRE ESTE JUEGO</button>
           </div>
         </div>
       )}
@@ -626,6 +662,84 @@ const App: React.FC = () => {
             </div>
 
             <button onClick={() => setView(GameView.MENU)} className="w-full mt-3 md:mt-4 lg:mt-10 py-3 md:py-4 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl md:rounded-2xl lg:rounded-[2.5rem] text-sm md:text-xl lg:text-3xl font-black uppercase italic tracking-tighter shadow-xl transition-all active:scale-95">MENÚ PRINCIPAL</button>
+          </div>
+        </div>
+      )}
+      
+      {view === GameView.ABOUT && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-950/90 backdrop-blur-xl p-4 animate-in fade-in duration-500">
+          <div className={`w-full max-w-4xl rounded-[3rem] lg:rounded-[5rem] overflow-hidden flex flex-col max-h-[90vh] shadow-[0_40px_100px_rgba(0,0,0,0.6)] border-8 ${showKonamiEffect ? 'bg-slate-900 border-indigo-900' : 'bg-white border-indigo-400'}`}>
+            <div className={`p-8 lg:p-14 ${showKonamiEffect ? 'bg-indigo-950' : 'bg-indigo-600'} text-white flex justify-between items-center relative overflow-hidden`}>
+              <div className="absolute top-0 right-0 p-10 opacity-10 rotate-12 scale-150"><i className="fas fa-book-open text-9xl"></i></div>
+              <div className="relative z-10">
+                <h2 className="text-4xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none">SOBRE EL JUEGO</h2>
+                <p className="text-indigo-200 font-bold text-lg lg:text-2xl mt-2 italic">GrammatiCat: Pedagogía y Diversión</p>
+              </div>
+              <button onClick={() => setView(GameView.MENU)} className="bg-white/20 hover:bg-white/40 w-12 h-12 lg:w-20 lg:h-20 rounded-full transition-colors flex items-center justify-center relative z-10">
+                <i className="fas fa-times text-2xl lg:text-5xl"></i>
+              </button>
+            </div>
+            
+            <div className={`flex-1 overflow-y-auto p-6 md:p-10 lg:p-20 custom-scrollbar ${showKonamiEffect ? 'text-indigo-100' : 'text-slate-800'}`}>
+              <div className="space-y-12 lg:space-y-20">
+                
+                {/* MODOS DE JUEGO */}
+                <section>
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 lg:w-16 lg:h-16 bg-indigo-500 rounded-2xl flex items-center justify-center text-white text-xl lg:text-3xl shadow-lg"><i className="fas fa-gamepad"></i></div>
+                    <h3 className="text-2xl lg:text-5xl font-black uppercase italic tracking-tighter">Modos de Juego para el Aula</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+                    <div className={`p-6 lg:p-10 rounded-[2rem] border-2 shadow-inner ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100'}`}>
+                      <h4 className="font-black text-indigo-500 text-lg lg:text-2xl uppercase mb-2">Modo Práctica</h4>
+                      <p className="text-sm lg:text-xl font-medium leading-relaxed opacity-80">Ideal para el refuerzo específico. El docente puede asignar un texto concreto (ej. Pedro Páramo) y una categoría para trabajar en gran grupo o de forma individual.</p>
+                    </div>
+                    <div className={`p-6 lg:p-10 rounded-[2rem] border-2 shadow-inner ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100'}`}>
+                      <h4 className="font-black text-indigo-500 text-lg lg:text-2xl uppercase mb-2">Reto Progresivo</h4>
+                      <p className="text-sm lg:text-xl font-medium leading-relaxed opacity-80">Itinerario pedagógico que guía al alumno por todas las categorías, desde las más sencillas hasta las complejas, aumentando la dificultad paso a paso.</p>
+                    </div>
+                    <div className={`p-6 lg:p-10 rounded-[2rem] border-2 shadow-inner ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100'}`}>
+                      <h4 className="font-black text-indigo-500 text-lg lg:text-2xl uppercase mb-2">Reto Aleatorio</h4>
+                      <p className="text-sm lg:text-xl font-medium leading-relaxed opacity-80">Perfecto para sesiones de repaso rápido o "warm-ups", donde el sistema elige texto y categoría al azar para probar la agilidad mental.</p>
+                    </div>
+                    <div className={`p-6 lg:p-10 rounded-[2rem] border-2 shadow-inner ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100'}`}>
+                      <h4 className="font-black text-indigo-500 text-lg lg:text-2xl uppercase mb-2">Editor de Niveles</h4>
+                      <p className="text-sm lg:text-xl font-medium leading-relaxed opacity-80">Herramienta potente donde los estudiantes traen sus propios textos y crean retos para sus compañeros, fomentando el aprendizaje entre iguales.</p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* INTENCION DIDACTICA */}
+                <section>
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 lg:w-16 lg:h-16 bg-amber-500 rounded-2xl flex items-center justify-center text-white text-xl lg:text-3xl shadow-lg"><i className="fas fa-graduation-cap"></i></div>
+                    <h3 className="text-2xl lg:text-5xl font-black uppercase italic tracking-tighter">Intención Didáctica y Beneficios</h3>
+                  </div>
+                  <div className="space-y-6 lg:space-y-8">
+                    {[
+                      { title: "Aprendizaje en Contexto", text: "No se analizan palabras aisladas. El alumno debe distinguir la función de la palabra según el sentido de la frase literaria.", icon: "fa-font" },
+                      { title: "Feedback Inmediato", text: "El juego detecta y muestra visualmente las palabras omitidas, permitiendo una metacognición instantánea tras cada partida.", icon: "fa-eye" },
+                      { title: "Gamificación Intrínseca", text: "Sistemas de vidas, potenciadores y logros mantienen la motivación alta sin perder nunca el foco estrictamente académico.", icon: "fa-trophy" },
+                      { title: "Fomento de la Lectura", text: "Al interactuar con textos de Unamuno, Borges o Cortázar, los alumnos se familiarizan con la prosa clásica de manera lúdica.", icon: "fa-book" },
+                      { title: "Competencia Digital", text: "Entorno ultra-responsivo ideal para cualquier dispositivo, perfecto para modelos de aula 1:1 o BYOD.", icon: "fa-tablet-alt" }
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-4 lg:gap-8">
+                        <i className={`fas ${item.icon} text-amber-500 text-xl lg:text-3xl mt-1`}></i>
+                        <div>
+                          <h4 className="font-black text-lg lg:text-3xl leading-none mb-1 uppercase tracking-tighter">{item.title}</h4>
+                          <p className="text-sm lg:text-xl font-medium opacity-70 leading-snug">{item.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+              </div>
+            </div>
+
+            <div className={`p-6 lg:p-10 text-center ${showKonamiEffect ? 'bg-slate-950 border-t border-slate-800' : 'bg-slate-50 border-t border-slate-100'}`}>
+              <button onClick={() => setView(GameView.MENU)} className="px-12 py-4 lg:py-6 bg-indigo-600 text-white rounded-2xl lg:rounded-[3rem] font-black uppercase italic tracking-tighter text-sm lg:text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">¡ENTENDIDO!</button>
+            </div>
           </div>
         </div>
       )}
