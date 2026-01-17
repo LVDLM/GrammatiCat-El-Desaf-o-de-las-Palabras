@@ -1,10 +1,9 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Use gemini-3-pro-preview for complex text analysis tasks like linguistic parsing.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
 export const analyzeTextWithAI = async (text: string) => {
-  // Always use a named parameter and obtain the API key exclusively from process.env.API_KEY.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
@@ -18,28 +17,37 @@ export const analyzeTextWithAI = async (text: string) => {
           items: {
             type: Type.OBJECT,
             properties: {
-              text: { 
-                type: Type.STRING,
-                description: 'La palabra extraída del texto.'
-              },
-              category: { 
-                type: Type.STRING,
-                description: 'La categoría gramatical: Sustantivo, Adjetivo, Verbo, Adverbio, Pronombre, Preposición, Conjunción, o Determinante.'
-              }
+              text: { type: Type.STRING },
+              category: { type: Type.STRING }
             },
             required: ["text", "category"]
           }
         }
       }
     });
-
-    if (!response.text) {
-      throw new Error("Respuesta de IA vacía");
-    }
-    
-    // Access the .text property directly and trim whitespace before parsing JSON.
     return JSON.parse(response.text.trim());
   } catch (e: any) {
     throw e;
+  }
+};
+
+export const getTutorExplanation = async (text: string, targetCategory: string, missedWords: string[], wrongWords: string[]) => {
+  try {
+    const prompt = `Eres GrammatiCat, un experto lingüista. 
+    En la frase: "${text}"
+    El jugador buscaba: ${targetCategory}.
+    Palabras que olvidó marcar: [${missedWords.join(', ')}].
+    Palabras que marcó por error: [${wrongWords.join(', ')}].
+    
+    Explica de forma muy breve (máximo 3 frases), con un tono amable y felino, por qué esas palabras pertenecen o no a la categoría buscada.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt
+    });
+
+    return response.text;
+  } catch (e) {
+    return "¡Miau! Hubo un problema con mi bola de cristal gramatical. Básicamente, revisa bien la función de cada palabra en la oración.";
   }
 };

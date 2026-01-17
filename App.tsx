@@ -7,6 +7,7 @@ import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
 import { Leaderboard } from './components/Leaderboard';
 import { fetchCommunityLevels, saveScore } from './services/supabaseService';
+import { getTutorExplanation } from './services/geminiService';
 
 export const getPluralCategory = (cat: WordClass): string => {
   switch (cat) {
@@ -15,6 +16,17 @@ export const getPluralCategory = (cat: WordClass): string => {
     default: return `${cat}s`;
   }
 };
+
+const CHALLENGE_PROGRESSION: WordClass[] = [
+  WordClass.SUSTANTIVO,
+  WordClass.ADJETIVO,
+  WordClass.VERBO,
+  WordClass.ADVERBIO,
+  WordClass.DETERMINANTE,
+  WordClass.PRONOMBRE,
+  WordClass.PREPOSICION,
+  WordClass.CONJUNCION
+];
 
 interface Reward {
   type: 'hint' | 'cleaner' | 'shield' | 'life';
@@ -107,6 +119,8 @@ const App: React.FC = () => {
   const [expandedCategory, setExpandedCategory] = useState<LevelGroup | null>(null);
   const [tutorialStep, setTutorialStep] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [tutorAdvice, setTutorAdvice] = useState<string | null>(null);
+  const [isAskingTutor, setIsAskingTutor] = useState(false);
   
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedStats = localStorage.getItem('grammaticat_stats');
@@ -124,7 +138,7 @@ const App: React.FC = () => {
     
     return {
       score: 0, lives: 3, time: 0, levelIndex: 0, isPlaying: false, isGameOver: false,
-      targetCategory: null, mode: null, powerups: { hints: 2, cleaners: 1, shields: 1 }, stats
+      targetCategory: null, mode: null, challengeStep: 0, powerups: { hints: 2, cleaners: 1, shields: 1 }, stats
     };
   });
 
@@ -146,29 +160,6 @@ const App: React.FC = () => {
   });
   const [lastUnlocked, setLastUnlocked] = useState<Achievement | null>(null);
   const timerRef = useRef<any>(null);
-
-  useEffect(() => {
-    const handleOrientationChange = () => {
-      const isPortrait = window.innerHeight > window.innerWidth;
-      if (isPortrait && document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    };
-    window.addEventListener('resize', handleOrientationChange);
-    return () => window.removeEventListener('resize', handleOrientationChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-      });
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
 
   useEffect(() => {
     const fsHandler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -216,27 +207,9 @@ const App: React.FC = () => {
     if (updatedStats.challengeTextsCount >= 25) unlockAchievement('challenge_25');
     if (updatedStats.challengeTextsCount >= 35) unlockAchievement('challenge_35');
     if (updatedStats.challengeTextsCount >= 50) unlockAchievement('challenge_50');
+  }, [unlockAchievement]);
 
-    const validEsLevels = (LITERARY_ES_LEVELS || []).filter(l => l && l.id);
-    const validUnivLevels = (LITERARY_UNIVERSAL_LEVELS || []).filter(l => l && l.id);
-
-    const spanishDoneCount = validEsLevels.filter(l => updatedStats.completedLevels?.[l.id]?.length > 0).length;
-    const univDoneCount = validUnivLevels.filter(l => updatedStats.completedLevels?.[l.id]?.length > 0).length;
-
-    if (validEsLevels.length > 0 && spanishDoneCount >= validEsLevels.length / 2 && validUnivLevels.length > 0 && univDoneCount >= validUnivLevels.length / 2) unlockAchievement('half_world');
-    if ((validEsLevels.length > 0 && spanishDoneCount === validEsLevels.length) || (validUnivLevels.length > 0 && univDoneCount === validUnivLevels.length)) unlockAchievement('max_knowledge');
-    if (validEsLevels.length > 0 && spanishDoneCount === validEsLevels.length && validUnivLevels.length > 0 && univDoneCount === validUnivLevels.length) unlockAchievement('absolute_knowledge');
-
-    if (currentLevel) {
-      const availableCats = Array.from(new Set((currentLevel.words || []).map(w => w.category)));
-      const completedCats = updatedStats.completedLevels?.[currentLevel.id] || [];
-      if (availableCats.length > 0 && availableCats.every(cat => completedCats.includes(cat))) {
-        unlockAchievement('all_categories_single');
-      }
-    }
-  }, [unlockAchievement, currentLevel]);
-
-  const startGame = (level: Level, category: WordClass, mode: 'PRACTICE' | 'CHALLENGE', resetSession: boolean = true) => {
+  const startGame = (level: Level, category: WordClass, mode: GameState['mode'], resetSession: boolean = true) => {
     if (!level) return;
     const isTutorial = level.categoryGroup === 'Tutorial';
     setCurrentLevel(level);
@@ -247,23 +220,15 @@ const App: React.FC = () => {
       time: level.timeLimit || 30,
       targetCategory: category,
       mode,
+      challengeStep: mode === 'CHALLENGE_PROGRESSIVE' ? (resetSession ? 0 : prev.challengeStep) : 0,
       isPlaying: !isTutorial, 
       isGameOver: false,
       isTutorialMode: isTutorial,
       powerups: resetSession ? { hints: 2, cleaners: 1, shields: 1 } : prev.powerups
     }));
-    setFoundWords([]); setErrorWords([]); setHighlightedWords([]); setCleanedWords([]); setLastReward(null); setScoreSaved(false);
+    setFoundWords([]); setErrorWords([]); setHighlightedWords([]); setCleanedWords([]); setLastReward(null); setScoreSaved(false); setTutorAdvice(null);
     setView(GameView.PLAYING);
     if (isTutorial) setTutorialStep(0); else setTutorialStep(null);
-  };
-
-  const nextTutorialStep = () => {
-    if (tutorialStep === null) return;
-    if (tutorialStep < 4) setTutorialStep(tutorialStep + 1);
-    else {
-      setTutorialStep(null);
-      setGameState(prev => ({ ...prev, isPlaying: true }));
-    }
   };
 
   const handleWordClick = (word: WordData) => {
@@ -272,8 +237,6 @@ const App: React.FC = () => {
     
     const cleanWord = word.text.toLowerCase().replace(/[.,;:!?]/g, '');
     const isContraction = cleanWord === 'al' || cleanWord === 'del';
-    
-    // Verificamos si es un acierto (categoría exacta o contracción con su doble valor)
     const isCorrect = word.category === gameState.targetCategory || 
                      (isContraction && (gameState.targetCategory === WordClass.PREPOSICION || gameState.targetCategory === WordClass.DETERMINANTE));
 
@@ -294,7 +257,7 @@ const App: React.FC = () => {
           if (prev.isTutorialMode) newStats.tutorialCompleted = true;
           else {
             newStats.totalTextsSuccessful = (newStats.totalTextsSuccessful || 0) + 1;
-            if (prev.mode === 'CHALLENGE') newStats.challengeTextsCount = (newStats.challengeTextsCount || 0) + 1;
+            if (prev.mode?.startsWith('CHALLENGE')) newStats.challengeTextsCount = (newStats.challengeTextsCount || 0) + 1;
             const alreadyDone = newStats.completedLevels?.[currentLevel.id] || [];
             if (!alreadyDone.includes(gameState.targetCategory!)) {
               newStats.completedLevels[currentLevel.id] = [...alreadyDone, gameState.targetCategory!];
@@ -315,15 +278,19 @@ const App: React.FC = () => {
           if (reward.type === 'hint') newPowerups.hints += 1;
           else if (reward.type === 'cleaner') newPowerups.cleaners += 1;
           else if (reward.type === 'shield') newPowerups.shields += 1;
-          else if (reward.type === 'life') {
-            newLives = Math.min(5, prev.lives + 1);
-            if (newLives === 5) unlockAchievement('unstoppable');
-          }
-          return { ...prev, isPlaying: false, lives: newLives, powerups: newPowerups, stats: newStats };
+          else if (reward.type === 'life') newLives = Math.min(5, prev.lives + 1);
+          
+          return { 
+            ...prev, 
+            isPlaying: false, 
+            lives: newLives, 
+            powerups: newPowerups, 
+            stats: newStats,
+            challengeStep: prev.mode === 'CHALLENGE_PROGRESSIVE' ? prev.challengeStep + 1 : prev.challengeStep
+          };
         });
-        if (errorWords.length === 0 && !gameState.isTutorialMode) unlockAchievement('perfectionist');
         setTimeout(() => { 
-          if (gameState.mode === 'CHALLENGE') startRandomChallenge(true); 
+          if (gameState.mode?.startsWith('CHALLENGE')) startChallenge(gameState.mode as any, true); 
           else setView(GameView.LEVEL_SELECT); 
         }, 3000); 
       }
@@ -342,19 +309,44 @@ const App: React.FC = () => {
     }
   };
 
-  const startRandomChallenge = useCallback(async (isTransition: boolean = false) => {
+  const startChallenge = useCallback(async (mode: 'CHALLENGE_RANDOM' | 'CHALLENGE_PROGRESSIVE', isTransition: boolean = false) => {
     const allAvailable = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS, ...communityLevels].filter(l => l && l.words);
     if (allAvailable.length === 0) return;
+    
     const randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
-    const categories = Array.from(new Set(randomLevel.words.map(w => w.category))) as WordClass[];
-    const randomCategory = (categories[Math.floor(Math.random() * categories.length)] as WordClass) || WordClass.SUSTANTIVO;
-    startGame(randomLevel, randomCategory, 'CHALLENGE', !isTransition);
-  }, [communityLevels]);
+    let category: WordClass;
+    
+    if (mode === 'CHALLENGE_PROGRESSIVE') {
+      const step = isTransition ? gameState.challengeStep + 1 : 0;
+      category = CHALLENGE_PROGRESSION[step % CHALLENGE_PROGRESSION.length];
+    } else {
+      const categories = Array.from(new Set(randomLevel.words.map(w => w.category))) as WordClass[];
+      category = categories[Math.floor(Math.random() * categories.length)] || WordClass.SUSTANTIVO;
+    }
+    
+    startGame(randomLevel, category, mode, !isTransition);
+  }, [communityLevels, gameState.challengeStep]);
 
   const handleGameOver = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setView(GameView.GAME_OVER);
     setGameState(prev => ({ ...prev, isPlaying: false, isGameOver: true }));
+  };
+
+  const askTutor = async () => {
+    if (!currentLevel || !gameState.targetCategory || isAskingTutor) return;
+    setIsAskingTutor(true);
+    
+    const missed = currentLevel.words
+      .filter(w => w.category === gameState.targetCategory && !foundWords.includes(w.id))
+      .map(w => w.text);
+    const wrong = currentLevel.words
+      .filter(w => errorWords.includes(w.id))
+      .map(w => w.text);
+      
+    const advice = await getTutorExplanation(currentLevel.text, gameState.targetCategory, missed, wrong);
+    setTutorAdvice(advice || null);
+    setIsAskingTutor(false);
   };
 
   useEffect(() => {
@@ -398,27 +390,6 @@ const App: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      setKonamiProgress(prev => {
-        const next = [...prev, e.key];
-        const matchLength = next.length;
-        const expected = KONAMI_CODE.slice(0, matchLength);
-        const isMatch = next.every((k, idx) => k.toLowerCase() === expected[idx].toLowerCase());
-        if (isMatch) {
-          if (matchLength === KONAMI_CODE.length) {
-            setShowKonamiEffect(true); setView(GameView.EDITOR); return [];
-          }
-          return next;
-        }
-        return [];
-      });
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const LevelCard: React.FC<{ level: Level }> = ({ level }) => {
     if (!level || !level.words) return null;
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
@@ -460,7 +431,7 @@ const App: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base md:text-2xl lg:text-4xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
-              <p className="text-[11px] md:text-sm lg:text-xl font-bold opacity-70 mt-1 lg:mt-2">{completedCount}/{filteredLevels.length} textos con algún progreso</p>
+              <p className="text-[11px] md:text-sm lg:text-xl font-bold opacity-70 mt-1 lg:mt-2">{completedCount}/{filteredLevels.length} textos</p>
             </div>
           </div>
           <i className={`fas fa-chevron-down text-lg md:text-2xl lg:text-3xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
@@ -496,16 +467,23 @@ const App: React.FC = () => {
               <i className="fas fa-graduation-cap text-3xl md:text-5xl lg:text-8xl text-indigo-500 mb-1 lg:mb-4 group-hover:rotate-12 transition-transform"></i>
               <span className={`text-xl md:text-2xl lg:text-5xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>PRÁCTICA</span>
             </button>
-            <button onClick={() => startRandomChallenge(false)} className={`menu-btn-container group relative flex-1 sm:max-w-[220px] lg:max-w-[400px] h-24 sm:h-48 lg:h-72 rounded-3xl lg:rounded-[4rem] shadow-2xl border-b-8 lg:border-b-[16px] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950' : 'bg-yellow-400 border-yellow-600'}`}>
-              <i className={`fas fa-fire text-3xl md:text-5xl lg:text-8xl mb-1 lg:mb-4 group-hover:scale-125 transition-transform animate-pulse ${showKonamiEffect ? 'text-yellow-400' : 'text-indigo-900'}`}></i>
-              <span className={`text-xl md:text-2xl lg:text-5xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO</span>
-            </button>
+            
+            <div className="flex-1 flex flex-col gap-4">
+               <button onClick={() => startChallenge('CHALLENGE_PROGRESSIVE')} className={`menu-btn-container group relative flex-1 rounded-3xl lg:rounded-[4rem] shadow-2xl border-b-8 lg:border-b-[16px] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-emerald-900 border-emerald-950' : 'bg-emerald-400 border-emerald-600'}`}>
+                <i className={`fas fa-layer-group text-3xl md:text-5xl lg:text-8xl mb-1 lg:mb-4 group-hover:scale-110 transition-transform ${showKonamiEffect ? 'text-emerald-300' : 'text-white'}`}></i>
+                <span className={`text-sm md:text-xl lg:text-4xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO PROGRESIVO</span>
+              </button>
+              <button onClick={() => startChallenge('CHALLENGE_RANDOM')} className={`menu-btn-container group relative flex-1 rounded-3xl lg:rounded-[4rem] shadow-2xl border-b-8 lg:border-b-[16px] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950' : 'bg-yellow-400 border-yellow-600'}`}>
+                <i className={`fas fa-dice text-3xl md:text-5xl lg:text-8xl mb-1 lg:mb-4 group-hover:rotate-45 transition-transform ${showKonamiEffect ? 'text-yellow-400' : 'text-indigo-900'}`}></i>
+                <span className={`text-sm md:text-xl lg:text-4xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO ALEATORIO</span>
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 lg:gap-10">
             <button onClick={() => setView(GameView.LEADERBOARD)} className="px-6 py-4 lg:px-12 lg:py-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-yellow-500 shadow-xl text-xs md:text-sm lg:text-xl flex items-center"><i className="fas fa-list-ol mr-2 lg:mr-4"></i> RÁNKING</button>
             <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-6 py-4 lg:px-12 lg:py-6 bg-white/20 hover:bg-white/40 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-white/30 text-xs md:text-sm lg:text-xl shadow-xl backdrop-blur-md flex items-center"><i className="fas fa-trophy mr-2 lg:mr-4"></i> LOGROS</button>
-            <button onClick={toggleFullscreen} className="px-6 py-4 lg:px-12 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-indigo-700 text-xs md:text-sm lg:text-xl flex items-center"><i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} mr-2 lg:mr-4`}></i> {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}</button>
+            <button onClick={() => setIsFullscreen(!isFullscreen)} className="px-6 py-4 lg:px-12 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-indigo-700 text-xs md:text-sm lg:text-xl flex items-center"><i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} mr-2 lg:mr-4`}></i> {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}</button>
           </div>
         </div>
       )}
@@ -528,7 +506,7 @@ const App: React.FC = () => {
 
       {view === GameView.PLAYING && currentLevel && gameState.targetCategory && (
         <div className="w-full h-full flex flex-col items-center p-1 md:p-2 lg:p-8 transition-all duration-300 overflow-hidden relative">
-          {tutorialStep !== null && <TutorialSign text={["¡Hola! Aquí verás qué palabra buscas.", "Controla tu tiempo, ¡vuela!", "Pierdes vida si fallas.", "¡Usa tus potenciadores!", "¡Suerte! Toca las palabras correctas."][tutorialStep]} onNext={nextTutorialStep} position={['category', 'time', 'lives', 'items', 'words'][tutorialStep] as any} isMidnight={showKonamiEffect} />}
+          {tutorialStep !== null && <TutorialSign text={["¡Hola! Aquí verás qué palabra buscas.", "Controla tu tiempo, ¡vuela!", "Pierdes vida si fallas.", "¡Usa tus potenciadores!", "¡Suerte! Toca las palabras correctas."][tutorialStep]} onNext={() => setTutorialStep(tutorialStep < 4 ? tutorialStep + 1 : null)} position={['category', 'time', 'lives', 'items', 'words'][tutorialStep] as any} isMidnight={showKonamiEffect} />}
           
           <div className="hud-container w-full max-w-7xl">
             <GameHUD state={gameState} target={gameState.targetCategory} />
@@ -549,13 +527,9 @@ const App: React.FC = () => {
                 { type: 'clean' as const, icon: 'fa-broom', label: 'LIMPIAR', count: gameState.powerups.cleaners, color: 'rose' }, 
                 { type: 'shield' as const, icon: 'fa-shield-alt', label: 'ESCUDO', count: gameState.powerups.shields, color: 'lime' } 
               ].map((p) => (
-                <button 
-                  key={p.type} onClick={() => usePowerup(p.type as any)} disabled={p.count <= 0} 
-                  className={`powerup-btn w-12 h-12 md:w-20 md:h-20 lg:w-36 lg:h-36 flex flex-col items-center justify-center rounded-2xl lg:rounded-[2.5rem] shadow-xl border-b-4 lg:border-b-8 transition-all active:scale-95 hover:scale-105 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500`) : 'opacity-40 grayscale pointer-events-none'}`}
-                >
+                <button key={p.type} onClick={() => usePowerup(p.type as any)} disabled={p.count <= 0} className={`powerup-btn w-12 h-12 md:w-20 md:h-20 lg:w-36 lg:h-36 flex flex-col items-center justify-center rounded-2xl lg:rounded-[2.5rem] shadow-xl border-b-4 lg:border-b-8 transition-all active:scale-95 hover:scale-105 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500`) : 'opacity-40 grayscale pointer-events-none'}`}>
                   <i className={`fas ${p.icon} text-sm md:text-2xl lg:text-5xl mb-1 lg:mb-3`}></i>
                   <span className="text-[7px] md:text-[10px] lg:text-lg font-black uppercase">{p.label} <span className="hidden lg:inline">({p.count})</span></span>
-                  <span className="lg:hidden text-[8px] font-black">({p.count})</span>
                 </button>
               ))}
               <button onClick={() => setView(GameView.MENU)} className="powerup-btn w-12 h-12 md:w-20 md:h-20 lg:w-36 lg:h-36 flex flex-col items-center justify-center rounded-2xl lg:rounded-[2.5rem] shadow-xl border-b-4 lg:border-b-8 bg-white border-slate-300 hover:scale-105 transition-all">
@@ -564,8 +538,6 @@ const App: React.FC = () => {
               </button>
             </div>
           </div>
-
-          <p className={`mt-2 lg:mt-6 text-[8px] md:text-xs lg:text-2xl font-black uppercase italic opacity-40 ${showKonamiEffect ? 'text-indigo-300' : 'text-indigo-900'}`}>{currentLevel.title}</p>
           
           {!gameState.isPlaying && !gameState.isGameOver && lastReward && (
             <div className="fixed inset-0 flex items-center justify-center z-[200] animate-in zoom-in duration-500 p-4">
@@ -586,20 +558,52 @@ const App: React.FC = () => {
       )}
 
       {view === GameView.GAME_OVER && (
-        <div className={`text-center p-8 md:p-12 lg:p-24 rounded-[3rem] lg:rounded-[6rem] shadow-2xl border-b-8 lg:border-b-[20px] border-rose-500 animate-in zoom-in w-full max-w-lg lg:max-w-4xl mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
-          <i className="fas fa-skull text-6xl lg:text-[10rem] text-rose-500 mb-8 block drop-shadow-lg"></i>
-          <h2 className="text-4xl md:text-6xl lg:text-9xl font-black italic mb-6 uppercase tracking-tighter leading-none">FIN DEL JUEGO</h2>
-          <div className="mb-8 lg:mb-16 p-6 lg:p-16 bg-indigo-50 rounded-[2rem] lg:rounded-[4rem] border-4 lg:border-8 border-indigo-100 shadow-inner">
-            <span className="text-5xl md:text-7xl lg:text-[12rem] font-black text-indigo-600 mb-2 leading-none">{gameState.score}</span>
-            <span className="text-xs lg:text-3xl font-bold text-slate-400 block uppercase tracking-[0.3em] mt-2">PUNTOS</span>
-            {gameState.score > 0 && !scoreSaved && (
-              <div className="mt-8 lg:mt-16 flex flex-col gap-4 lg:gap-8">
-                <input type="text" value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Tu nombre..." className="p-4 lg:p-8 rounded-2xl lg:rounded-[2.5rem] border-4 lg:border-8 border-indigo-200 text-center font-black text-xl lg:text-4xl outline-none focus:ring-8 focus:ring-indigo-100 transition-all" />
-                <button onClick={async () => { setIsSavingScore(true); await saveScore({ name: playerName, score: gameState.score }); setScoreSaved(true); setIsSavingScore(false); }} disabled={!playerName || isSavingScore} className="py-4 lg:py-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black text-sm lg:text-3xl uppercase tracking-widest shadow-xl transition-all active:scale-95">GUARDAR PUNTOS</button>
+        <div className={`flex flex-col items-center justify-center w-full h-full p-4 overflow-y-auto custom-scrollbar`}>
+          <div className={`text-center p-8 md:p-12 lg:p-16 rounded-[3rem] lg:rounded-[5rem] shadow-2xl border-b-8 lg:border-b-[20px] border-rose-500 animate-in zoom-in w-full max-w-lg lg:max-w-5xl ${showKonamiEffect ? 'bg-slate-900 text-white' : 'bg-white'}`}>
+            <i className="fas fa-skull text-5xl lg:text-8xl text-rose-500 mb-4 block drop-shadow-lg"></i>
+            <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic mb-4 uppercase tracking-tighter leading-none">FIN DEL JUEGO</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-stretch">
+              <div className="p-6 lg:p-10 bg-indigo-50 rounded-[2rem] lg:rounded-[3rem] border-4 lg:border-8 border-indigo-100 shadow-inner flex flex-col justify-center">
+                <span className="text-5xl md:text-6xl lg:text-9xl font-black text-indigo-600 mb-1 leading-none">{gameState.score}</span>
+                <span className="text-xs lg:text-xl font-bold text-slate-400 block uppercase tracking-[0.3em] mb-4">PUNTOS</span>
+                
+                {gameState.score > 0 && !scoreSaved && (
+                  <div className="flex flex-col gap-3">
+                    <input type="text" value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Tu nombre..." className="p-3 lg:p-6 rounded-xl border-4 border-indigo-200 text-center font-black text-lg lg:text-2xl outline-none focus:ring-4 focus:ring-indigo-100 transition-all text-indigo-900" />
+                    <button onClick={async () => { setIsSavingScore(true); await saveScore({ name: playerName, score: gameState.score }); setScoreSaved(true); setIsSavingScore(false); }} disabled={!playerName || isSavingScore} className="py-3 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-xs lg:text-xl uppercase tracking-widest shadow-xl transition-all">GUARDAR</button>
+                  </div>
+                )}
               </div>
-            )}
+
+              <div className={`p-6 lg:p-10 rounded-[2rem] lg:rounded-[3rem] border-4 lg:border-8 flex flex-col justify-center transition-all ${tutorAdvice ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-100'}`}>
+                {!tutorAdvice ? (
+                  <div className="flex flex-col items-center">
+                    <div className="w-20 h-20 lg:w-32 lg:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 text-3xl lg:text-5xl text-indigo-600 animate-bounce">
+                      <i className="fas fa-cat"></i>
+                    </div>
+                    <p className="text-xs lg:text-xl font-bold text-slate-500 italic mb-6">¿Quieres saber por qué has fallado?</p>
+                    <button onClick={askTutor} disabled={isAskingTutor} className="w-full py-4 lg:py-8 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black text-sm lg:text-2xl uppercase italic tracking-tighter shadow-lg transition-all active:scale-95">
+                      {isAskingTutor ? <i className="fas fa-spinner fa-spin"></i> : <><i className="fas fa-magic mr-2"></i> PREGUNTAR AL TUTOR</>}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-left animate-in fade-in slide-in-from-bottom duration-500">
+                    <div className="flex items-center mb-3">
+                       <div className="w-10 h-10 lg:w-16 lg:h-16 bg-yellow-400 rounded-full flex items-center justify-center mr-3 shadow-md">
+                          <i className="fas fa-cat text-indigo-900 text-sm lg:text-2xl"></i>
+                       </div>
+                       <h3 className="text-indigo-900 font-black italic uppercase text-[10px] lg:text-lg">Consejo de GrammatiCat</h3>
+                    </div>
+                    <p className="text-indigo-800 font-medium text-xs lg:text-xl leading-relaxed italic">"{tutorAdvice}"</p>
+                    <button onClick={() => setTutorAdvice(null)} className="mt-4 text-[10px] lg:text-sm font-black text-indigo-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Volver</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button onClick={() => setView(GameView.MENU)} className="w-full mt-8 py-5 lg:py-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[3rem] text-lg lg:text-3xl font-black uppercase italic tracking-tighter shadow-2xl transition-all">MENÚ PRINCIPAL</button>
           </div>
-          <button onClick={() => setView(GameView.MENU)} className="w-full py-5 lg:py-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[3rem] text-lg lg:text-4xl font-black uppercase italic tracking-tighter shadow-2xl transition-all active:scale-95">MENÚ PRINCIPAL</button>
         </div>
       )}
       

@@ -54,7 +54,8 @@ export interface GameState {
   isPlaying: boolean;
   isGameOver: boolean;
   targetCategory: WordClass | null;
-  mode: 'PRACTICE' | 'CHALLENGE' | null;
+  mode: 'PRACTICE' | 'CHALLENGE_RANDOM' | 'CHALLENGE_PROGRESSIVE' | null;
+  challengeStep: number; // Para el modo progresivo
   powerups: {
     hints: number;
     shields: number;
@@ -62,11 +63,11 @@ export interface GameState {
   };
   stats: {
     nounsFound: number;
-    levelsCompleted: number; // General (inc. tutorial)
-    totalTextsSuccessful: number; // Excluye tutorial
+    levelsCompleted: number;
+    totalTextsSuccessful: number;
     challengeTextsCount: number;
     tutorialCompleted: boolean;
-    completedLevels: Record<number, WordClass[]>; // Mapeo nivel -> categorías superadas
+    completedLevels: Record<number, WordClass[]>;
   };
   isTutorialMode?: boolean;
 }
