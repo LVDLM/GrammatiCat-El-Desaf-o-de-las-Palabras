@@ -155,7 +155,7 @@ const App: React.FC = () => {
       const loadCommunity = async () => {
         try {
           const localUserLevels = await fetchCommunityLevels();
-          setCommunityLevels(localUserLevels);
+          setCommunityLevels(localUserLevels || []);
         } catch (e) { console.error("Failed to load levels", e); }
       };
       loadCommunity();
@@ -185,8 +185,9 @@ const App: React.FC = () => {
 
     const totalSpanish = LITERARY_ES_LEVELS.length;
     const totalUniversal = LITERARY_UNIVERSAL_LEVELS.length;
-    const spanishDoneIdsCount = LITERARY_ES_LEVELS.filter(l => updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
-    const universalDoneIdsCount = LITERARY_UNIVERSAL_LEVELS.filter(l => updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
+    // Añadida comprobación l && l.id para evitar errores si el array tiene huecos
+    const spanishDoneIdsCount = LITERARY_ES_LEVELS.filter(l => l && l.id && updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
+    const universalDoneIdsCount = LITERARY_UNIVERSAL_LEVELS.filter(l => l && l.id && updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
 
     if (spanishDoneIdsCount >= totalSpanish / 2 && universalDoneIdsCount >= totalUniversal / 2) unlockAchievement('half_world');
     if (spanishDoneIdsCount === totalSpanish || universalDoneIdsCount === totalUniversal) unlockAchievement('max_knowledge');
@@ -202,6 +203,7 @@ const App: React.FC = () => {
 
     const allPredefined = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS];
     const isMaster = allPredefined.every(level => {
+      if (!level || !level.words) return true;
       const availableCats = Array.from(new Set(level.words.map(w => w.category)));
       const completedCats = updatedStats.completedLevels[level.id] || [];
       return availableCats.every(cat => completedCats.includes(cat));
@@ -210,6 +212,7 @@ const App: React.FC = () => {
   }, [unlockAchievement, currentLevel]);
 
   const startGame = (level: Level, category: WordClass, mode: 'PRACTICE' | 'CHALLENGE', resetSession: boolean = true) => {
+    if (!level) return;
     const isTutorial = level.categoryGroup === 'Tutorial';
     setCurrentLevel(level);
     setGameState(prev => ({
@@ -304,7 +307,7 @@ const App: React.FC = () => {
   };
 
   const startRandomChallenge = useCallback(async (isTransition: boolean = false) => {
-    const allAvailable = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS, ...communityLevels];
+    const allAvailable = [...LITERARY_ES_LEVELS, ...LITERARY_UNIVERSAL_LEVELS, ...communityLevels].filter(l => l && l.words);
     if (allAvailable.length === 0) return;
     const randomLevel = allAvailable[Math.floor(Math.random() * allAvailable.length)];
     const categories = Array.from(new Set(randomLevel.words.map(w => w.category))) as WordClass[];
@@ -371,6 +374,7 @@ const App: React.FC = () => {
   }, []);
 
   const LevelCard: React.FC<{ level: Level }> = ({ level }) => {
+    if (!level || !level.words) return null;
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     const doneCats = gameState.stats.completedLevels[level.id] || [];
     return (
@@ -395,7 +399,8 @@ const App: React.FC = () => {
 
   const AccordionSection = ({ id, title, icon, levels, color }: { id: LevelGroup, title: string, icon: string, levels: Level[], color: string }) => {
     const isExpanded = expandedCategory === id;
-    const completedCount = levels.filter(l => gameState.stats.completedLevels[l.id] && gameState.stats.completedLevels[l.id].length > 0).length;
+    const filteredLevels = levels.filter(l => l && l.words);
+    const completedCount = filteredLevels.filter(l => gameState.stats.completedLevels[l.id] && gameState.stats.completedLevels[l.id].length > 0).length;
     return (
       <div className={`w-full rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-300 border-2 md:border-4 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
         <button onClick={() => setExpandedCategory(isExpanded ? null : id)} className={`w-full flex items-center justify-between p-4 md:p-8 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}>
@@ -405,7 +410,7 @@ const App: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm md:text-3xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
-              <p className="text-[8px] md:text-sm font-bold opacity-70 mt-1">{completedCount}/{levels.length} textos con algún progreso</p>
+              <p className="text-[8px] md:text-sm font-bold opacity-70 mt-1">{completedCount}/{filteredLevels.length} textos con algún progreso</p>
             </div>
           </div>
           <i className={`fas fa-chevron-down text-lg md:text-4xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
@@ -413,7 +418,7 @@ const App: React.FC = () => {
         {isExpanded && (
           <div className="p-4 md:p-6 pt-0 animate-in slide-in-from-top duration-300">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              {levels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
+              {filteredLevels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
             </div>
           </div>
         )}
@@ -440,7 +445,7 @@ const App: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 md:gap-8 w-full justify-center mb-8 md:mb-12">
             <button onClick={() => setView(GameView.LEVEL_SELECT)} className={`group relative flex-1 sm:max-w-[240px] h-32 sm:h-56 rounded-2xl md:rounded-[2.5rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
               <i className="fas fa-graduation-cap text-3xl sm:text-6xl text-indigo-500 mb-1 md:mb-3 group-hover:rotate-12 transition-transform"></i>
-              <span className={`text-xl sm:text-2xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>PRACTICAR</span>
+              <span className={`text-xl sm:text-2xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>PRÁCTICA</span>
             </button>
             <button onClick={() => startRandomChallenge(false)} className={`group relative flex-1 sm:max-w-[240px] h-32 sm:h-56 rounded-2xl md:rounded-[2.5rem] shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950' : 'bg-yellow-400 border-yellow-600'}`}>
               <i className={`fas fa-fire text-3xl sm:text-6xl mb-1 md:mb-3 group-hover:scale-125 transition-transform animate-pulse ${showKonamiEffect ? 'text-yellow-400' : 'text-indigo-900'}`}></i>
