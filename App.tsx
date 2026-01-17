@@ -500,9 +500,9 @@ const App: React.FC = () => {
           
           <div className="w-full flex flex-1 flex-col md:flex-row items-stretch justify-center gap-2 overflow-hidden px-2">
             <div id="game-board" className={`flex-1 rounded-[1.5rem] md:rounded-[3rem] p-3 md:p-6 shadow-2xl border-b-4 flex flex-col justify-center transition-all overflow-y-auto custom-scrollbar ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
-              <div className={`relative flex flex-wrap justify-center items-center gap-1 md:gap-3 font-black content-center text-xl md:text-4xl ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
+              <div className={`relative flex flex-wrap justify-center items-center gap-1 md:gap-4 font-black content-center text-2xl md:text-5xl ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
                 {currentLevel.words.map((w) => (
-                  <span key={w.id} onClick={() => handleWordClick(w)} className={`word-bubble cursor-pointer px-2.5 py-1 rounded-xl transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-lg -rotate-1 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-30 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-10 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-2 md:ring-4 ring-yellow-400 animate-pulse' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
+                  <span key={w.id} onClick={() => handleWordClick(w)} className={`word-bubble cursor-pointer px-3 py-1 md:px-5 md:py-2 rounded-xl md:rounded-2xl transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-lg -rotate-1 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-30 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-10 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-2 md:ring-4 ring-yellow-400 animate-pulse' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
                 ))}
               </div>
             </div>
@@ -549,7 +549,7 @@ const App: React.FC = () => {
       )}
 
       {view === GameView.GAME_OVER && (
-        <div className={`text-center p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-2xl border-b-4 border-rose-500 animate-in zoom-in w-full max-w-sm mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
+        <div className={`text-center p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-2xl border-b-4 border-rose-500 animate-in zoom-in w-full max-sm mx-4 ${showKonamiEffect ? 'bg-slate-900' : 'bg-white'}`}>
           <i className="fas fa-skull text-5xl text-rose-500 mb-4 block"></i>
           <h2 className="text-3xl md:text-5xl font-black italic mb-3">FIN DEL JUEGO</h2>
           <div className="mb-6 p-4 bg-indigo-50 rounded-2xl border-2 border-indigo-100">
