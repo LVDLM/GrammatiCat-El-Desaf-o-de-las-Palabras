@@ -109,7 +109,7 @@ const App: React.FC = () => {
   
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedStats = localStorage.getItem('grammaticat_stats');
-    const stats = savedStats ? JSON.parse(savedStats) : { 
+    const defaultStats = { 
       nounsFound: 0, 
       levelsCompleted: 0, 
       totalTextsSuccessful: 0, 
@@ -117,6 +117,11 @@ const App: React.FC = () => {
       tutorialCompleted: false,
       completedLevels: {} 
     };
+    
+    // Merge robusto de estadísticas para evitar propiedades undefined
+    const stats = savedStats ? { ...defaultStats, ...JSON.parse(savedStats) } : defaultStats;
+    if (!stats.completedLevels) stats.completedLevels = {};
+    
     return {
       score: 0, lives: 3, time: 0, levelIndex: 0, isPlaying: false, isGameOver: false,
       targetCategory: null, mode: null, powerups: { hints: 2, cleaners: 1, shields: 1 }, stats
@@ -185,9 +190,10 @@ const App: React.FC = () => {
 
     const totalSpanish = LITERARY_ES_LEVELS.length;
     const totalUniversal = LITERARY_UNIVERSAL_LEVELS.length;
-    // Añadida comprobación l && l.id para evitar errores si el array tiene huecos
-    const spanishDoneIdsCount = LITERARY_ES_LEVELS.filter(l => l && l.id && updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
-    const universalDoneIdsCount = LITERARY_UNIVERSAL_LEVELS.filter(l => l && l.id && updatedStats.completedLevels[l.id] && updatedStats.completedLevels[l.id].length > 0).length;
+    
+    // Uso de encadenamiento opcional para evitar errores de lectura sobre undefined
+    const spanishDoneIdsCount = LITERARY_ES_LEVELS.filter(l => l?.id && updatedStats.completedLevels?.[l.id]?.length > 0).length;
+    const universalDoneIdsCount = LITERARY_UNIVERSAL_LEVELS.filter(l => l?.id && updatedStats.completedLevels?.[l.id]?.length > 0).length;
 
     if (spanishDoneIdsCount >= totalSpanish / 2 && universalDoneIdsCount >= totalUniversal / 2) unlockAchievement('half_world');
     if (spanishDoneIdsCount === totalSpanish || universalDoneIdsCount === totalUniversal) unlockAchievement('max_knowledge');
@@ -195,7 +201,7 @@ const App: React.FC = () => {
 
     if (currentLevel) {
       const availableCats = Array.from(new Set(currentLevel.words.map(w => w.category)));
-      const completedCats = updatedStats.completedLevels[currentLevel.id] || [];
+      const completedCats = updatedStats.completedLevels?.[currentLevel.id] || [];
       if (availableCats.every(cat => completedCats.includes(cat))) {
         unlockAchievement('all_categories_single');
       }
@@ -205,7 +211,7 @@ const App: React.FC = () => {
     const isMaster = allPredefined.every(level => {
       if (!level || !level.words) return true;
       const availableCats = Array.from(new Set(level.words.map(w => w.category)));
-      const completedCats = updatedStats.completedLevels[level.id] || [];
+      const completedCats = updatedStats.completedLevels?.[level.id] || [];
       return availableCats.every(cat => completedCats.includes(cat));
     });
     if (isMaster) unlockAchievement('all_categories_all_texts');
@@ -248,7 +254,7 @@ const App: React.FC = () => {
     if (word.category === gameState.targetCategory) {
       const newFound = [...foundWords, word.id];
       setFoundWords(newFound);
-      setGameState(prev => ({ ...prev, score: prev.score + 10, stats: { ...prev.stats, nounsFound: prev.stats.nounsFound + (word.category === WordClass.SUSTANTIVO ? 1 : 0) } }));
+      setGameState(prev => ({ ...prev, score: prev.score + 10, stats: { ...prev.stats, nounsFound: (prev.stats?.nounsFound || 0) + (word.category === WordClass.SUSTANTIVO ? 1 : 0) } }));
       
       const targetWordsCount = currentLevel.words.filter(w => w.category === gameState.targetCategory).length;
       if (newFound.length === targetWordsCount) {
@@ -256,10 +262,10 @@ const App: React.FC = () => {
           const newStats = { ...prev.stats };
           if (prev.isTutorialMode) newStats.tutorialCompleted = true;
           else {
-            newStats.totalTextsSuccessful += 1;
-            if (prev.mode === 'CHALLENGE') newStats.challengeTextsCount += 1;
+            newStats.totalTextsSuccessful = (newStats.totalTextsSuccessful || 0) + 1;
+            if (prev.mode === 'CHALLENGE') newStats.challengeTextsCount = (newStats.challengeTextsCount || 0) + 1;
             const levelId = currentLevel.id;
-            const alreadyDone = newStats.completedLevels[levelId] || [];
+            const alreadyDone = newStats.completedLevels?.[levelId] || [];
             if (!alreadyDone.includes(gameState.targetCategory!)) {
               newStats.completedLevels[levelId] = [...alreadyDone, gameState.targetCategory!];
             }
@@ -376,7 +382,7 @@ const App: React.FC = () => {
   const LevelCard: React.FC<{ level: Level }> = ({ level }) => {
     if (!level || !level.words) return null;
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
-    const doneCats = gameState.stats.completedLevels[level.id] || [];
+    const doneCats = gameState.stats.completedLevels?.[level.id] || [];
     return (
       <div className={`rounded-xl md:rounded-2xl p-3 md:p-4 shadow-md border-b-2 transition-all hover:bg-indigo-50/50 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-50'}`}>
          <div className="flex justify-between items-start mb-2">
@@ -400,7 +406,11 @@ const App: React.FC = () => {
   const AccordionSection = ({ id, title, icon, levels, color }: { id: LevelGroup, title: string, icon: string, levels: Level[], color: string }) => {
     const isExpanded = expandedCategory === id;
     const filteredLevels = levels.filter(l => l && l.words);
-    const completedCount = filteredLevels.filter(l => gameState.stats.completedLevels[l.id] && gameState.stats.completedLevels[l.id].length > 0).length;
+    const completedCount = filteredLevels.filter(l => {
+      const done = gameState.stats.completedLevels?.[l.id];
+      return done && done.length > 0;
+    }).length;
+
     return (
       <div className={`w-full rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-300 border-2 md:border-4 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
         <button onClick={() => setExpandedCategory(isExpanded ? null : id)} className={`w-full flex items-center justify-between p-4 md:p-8 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}>
