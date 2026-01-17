@@ -203,7 +203,6 @@ const App: React.FC = () => {
     if (updatedStats.challengeTextsCount >= 35) unlockAchievement('challenge_35');
     if (updatedStats.challengeTextsCount >= 50) unlockAchievement('challenge_50');
 
-    // Sanitización extrema de los niveles para evitar TypeErrors en producción
     const validEsLevels = (LITERARY_ES_LEVELS || []).filter(l => l && l.id);
     const validUnivLevels = (LITERARY_UNIVERSAL_LEVELS || []).filter(l => l && l.id);
 
@@ -389,16 +388,16 @@ const App: React.FC = () => {
     const cats = Array.from(new Set(level.words.map(w => w.category))) as WordClass[];
     const doneCats = gameState.stats.completedLevels?.[level.id] || [];
     return (
-      <div className={`rounded-xl p-3 shadow-md border-b-2 transition-all hover:bg-indigo-50/50 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-50'}`}>
-         <div className="flex justify-between items-start mb-2">
-           <h3 className={`text-[10px] md:text-xs font-black truncate max-w-[80%] uppercase italic ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
-           {doneCats.length === cats.length && <i className="fas fa-check-circle text-green-500 text-[10px]"></i>}
+      <div className={`rounded-xl p-2 md:p-3 shadow-md border-b-2 transition-all hover:bg-indigo-50/50 ${showKonamiEffect ? 'bg-slate-800 border-slate-700' : 'bg-white border-indigo-50'}`}>
+         <div className="flex justify-between items-start mb-1.5">
+           <h3 className={`text-[9px] md:text-xs font-black truncate max-w-[80%] uppercase italic ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>{level.title}</h3>
+           {doneCats.length === cats.length && <i className="fas fa-check-circle text-green-500 text-[9px]"></i>}
          </div>
          <div className="flex flex-wrap gap-1">
             {cats.map(cat => (
               <button 
                 key={cat} onClick={() => startGame(level, cat, 'PRACTICE', true)}
-                className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase transition-all shadow-sm active:scale-95 ${doneCats.includes(cat) ? 'bg-green-100 text-green-700 border border-green-200' : showKonamiEffect ? 'bg-slate-700 text-indigo-300' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'}`}
+                className={`px-1.5 py-0.5 rounded-md text-[7px] md:text-[8px] font-black uppercase transition-all shadow-sm active:scale-95 ${doneCats.includes(cat) ? 'bg-green-100 text-green-700 border border-green-200' : showKonamiEffect ? 'bg-slate-700 text-indigo-300' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'}`}
               >
                 {getPluralCategory(cat)}
               </button>
@@ -417,22 +416,22 @@ const App: React.FC = () => {
     }).length;
 
     return (
-      <div className={`w-full rounded-3xl overflow-hidden transition-all duration-300 border-2 md:border-4 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
-        <button onClick={() => setExpandedCategory(isExpanded ? null : id)} className={`w-full flex items-center justify-between p-4 md:p-6 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}>
-          <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl shadow-lg ${color} text-white`}>
+      <div className={`w-full rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-300 border-2 ${isExpanded ? `bg-white shadow-xl ${showKonamiEffect ? 'border-indigo-800 bg-slate-900' : 'border-indigo-400'}` : `bg-white/10 border-transparent hover:bg-white/20`}`}>
+        <button onClick={() => setExpandedCategory(isExpanded ? null : id)} className={`w-full flex items-center justify-between p-3 md:p-6 text-left transition-colors ${isExpanded ? (showKonamiEffect ? 'text-white' : 'text-indigo-900') : 'text-white'}`}>
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-xl md:text-2xl shadow-lg ${color} text-white`}>
               <i className={`fas ${icon}`}></i>
             </div>
             <div>
-              <h3 className="text-sm md:text-2xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
-              <p className="text-[8px] md:text-xs font-bold opacity-70 mt-1">{completedCount}/{filteredLevels.length} textos con algún progreso</p>
+              <h3 className="text-sm md:text-xl font-black uppercase italic tracking-tighter leading-none">{title}</h3>
+              <p className="text-[7px] md:text-xs font-bold opacity-70 mt-0.5">{completedCount}/{filteredLevels.length} textos con algún progreso</p>
             </div>
           </div>
-          <i className={`fas fa-chevron-down text-lg md:text-2xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
+          <i className={`fas fa-chevron-down text-base md:text-xl transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}></i>
         </button>
         {isExpanded && (
-          <div className="p-4 pt-0 animate-in slide-in-from-top duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="p-3 pt-0 animate-in slide-in-from-top duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
               {filteredLevels.map(lvl => <LevelCard key={lvl.id} level={lvl} />)}
             </div>
           </div>
@@ -442,7 +441,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`h-[100dvh] w-full flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'} overflow-hidden relative`}>
+    <div className={`min-h-[100dvh] w-full flex flex-col items-center justify-start py-4 md:py-8 p-2 md:p-4 transition-all duration-1000 ${showKonamiEffect ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 konami-active' : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'} relative`}>
       {lastUnlocked && (
         <div className="fixed top-4 right-4 z-[100] bg-white p-3 rounded-xl shadow-2xl border-2 border-yellow-400 animate-in slide-in-from-right duration-500 flex items-center space-x-3">
           <div className="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center text-indigo-900 text-lg"><i className={`fas ${lastUnlocked.icon}`}></i></div>
@@ -451,38 +450,38 @@ const App: React.FC = () => {
       )}
 
       {view === GameView.MENU && (
-        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 w-full max-w-4xl text-center px-4">
+        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 w-full max-w-4xl text-center px-4 pb-10">
           <div className="relative mb-6 md:mb-10 floating">
             <h1 className="main-title text-5xl sm:text-7xl md:text-9xl font-black text-white italic drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)] tracking-tighter select-none uppercase">GRAMMA<span className="text-yellow-300">CAT</span></h1>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 md:gap-8 w-full justify-center mb-8">
-            <button onClick={() => setView(GameView.LEVEL_SELECT)} className={`group relative flex-1 sm:max-w-[220px] h-28 sm:h-48 rounded-3xl shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+            <button onClick={() => setView(GameView.LEVEL_SELECT)} className={`menu-btn-container group relative flex-1 sm:max-w-[220px] h-24 sm:h-48 rounded-3xl shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
               <i className="fas fa-graduation-cap text-3xl md:text-5xl text-indigo-500 mb-1 group-hover:rotate-12 transition-transform"></i>
               <span className={`text-xl md:text-2xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>PRÁCTICA</span>
             </button>
-            <button onClick={() => startRandomChallenge(false)} className={`group relative flex-1 sm:max-w-[220px] h-28 sm:h-48 rounded-3xl shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950' : 'bg-yellow-400 border-yellow-600'}`}>
+            <button onClick={() => startRandomChallenge(false)} className={`menu-btn-container group relative flex-1 sm:max-w-[220px] h-24 sm:h-48 rounded-3xl shadow-2xl border-b-8 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center overflow-hidden ${showKonamiEffect ? 'bg-purple-900 border-purple-950' : 'bg-yellow-400 border-yellow-600'}`}>
               <i className={`fas fa-fire text-3xl md:text-5xl mb-1 group-hover:scale-125 transition-transform animate-pulse ${showKonamiEffect ? 'text-yellow-400' : 'text-indigo-900'}`}></i>
               <span className={`text-xl md:text-2xl font-black uppercase italic tracking-tighter ${showKonamiEffect ? 'text-white' : 'text-indigo-900'}`}>RETO</span>
             </button>
           </div>
           
           <div className="flex flex-wrap justify-center gap-3">
-            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black border-2 border-yellow-500 shadow-xl text-xs md:text-base flex items-center"><i className="fas fa-list-ol mr-2"></i> RÁNKING</button>
-            <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-5 py-3 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 text-xs md:text-base shadow-xl backdrop-blur-md flex items-center"><i className="fas fa-trophy mr-2"></i> LOGROS</button>
-            <button onClick={toggleFullscreen} className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black border-2 border-indigo-700 text-xs md:text-base flex items-center"><i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} mr-2`}></i> {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}</button>
+            <button onClick={() => setView(GameView.LEADERBOARD)} className="px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl font-black border-2 border-yellow-500 shadow-xl text-xs md:text-sm flex items-center"><i className="fas fa-list-ol mr-2"></i> RÁNKING</button>
+            <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-5 py-3 bg-white/20 hover:bg-white/40 text-white rounded-2xl font-black border-2 border-white/30 text-xs md:text-sm shadow-xl backdrop-blur-md flex items-center"><i className="fas fa-trophy mr-2"></i> LOGROS</button>
+            <button onClick={toggleFullscreen} className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black border-2 border-indigo-700 text-xs md:text-sm flex items-center"><i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'} mr-2`}></i> {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}</button>
           </div>
         </div>
       )}
 
       {view === GameView.LEVEL_SELECT && (
-        <div className="w-full max-w-4xl flex flex-col items-center animate-in slide-in-from-bottom duration-500 overflow-y-auto h-full custom-scrollbar p-3">
-          <div className="w-full flex justify-between items-center mb-4 sticky top-0 bg-transparent z-10 py-1">
+        <div className="w-full max-w-4xl flex flex-col items-center animate-in slide-in-from-bottom duration-500 p-3 pb-20">
+          <div className="w-full flex justify-between items-center mb-6 sticky top-0 bg-transparent z-10 py-1">
             <button onClick={() => setView(GameView.MENU)} className="p-2 bg-white/20 text-white rounded-full hover:bg-white/40"><i className="fas fa-arrow-left text-sm md:text-lg"></i></button>
-            <h2 className="text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter">ELIGE TEXTO</h2>
+            <h2 className="text-xl md:text-3xl font-black text-white uppercase italic tracking-tighter">ELIGE TEXTO</h2>
             <div className="w-8"></div>
           </div>
-          <div className="flex flex-col gap-3 w-full pb-8">
+          <div className="flex flex-col gap-3 w-full">
             <AccordionSection id="Tutorial" title="Tutorial" icon="fa-chalkboard-teacher" color="bg-emerald-500" levels={INITIAL_LEVELS} />
             <AccordionSection id="Literatura en español" title="Español" icon="fa-feather-alt" color="bg-amber-500" levels={LITERARY_ES_LEVELS} />
             <AccordionSection id="Literatura universal" title="Universal" icon="fa-globe-americas" color="bg-indigo-500" levels={LITERARY_UNIVERSAL_LEVELS} />
@@ -500,10 +499,10 @@ const App: React.FC = () => {
           </div>
           
           <div className="w-full flex flex-1 flex-col md:flex-row items-stretch justify-center gap-2 overflow-hidden px-2">
-            <div id="game-board" className={`flex-1 rounded-[2rem] md:rounded-[3rem] p-3 md:p-6 shadow-2xl border-b-4 flex flex-col justify-center transition-all overflow-y-auto custom-scrollbar ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
-              <div className={`relative flex flex-wrap justify-center items-center gap-1.5 md:gap-3 font-black content-center text-lg md:text-4xl ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
+            <div id="game-board" className={`flex-1 rounded-[1.5rem] md:rounded-[3rem] p-3 md:p-6 shadow-2xl border-b-4 flex flex-col justify-center transition-all overflow-y-auto custom-scrollbar ${showKonamiEffect ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-200'}`}>
+              <div className={`relative flex flex-wrap justify-center items-center gap-1 md:gap-3 font-black content-center text-lg md:text-3xl ${showKonamiEffect ? 'text-white' : 'text-slate-800'}`}>
                 {currentLevel.words.map((w) => (
-                  <span key={w.id} onClick={() => handleWordClick(w)} className={`word-bubble cursor-pointer px-3 py-1 rounded-xl transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-lg -rotate-1 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-30 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-10 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-4 ring-yellow-400 animate-pulse' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
+                  <span key={w.id} onClick={() => handleWordClick(w)} className={`word-bubble cursor-pointer px-2 py-0.5 rounded-lg transition-all duration-300 transform select-none ${foundWords.includes(w.id) ? 'bg-green-500 text-white shadow-lg -rotate-1 scale-105 pointer-events-none' : ''} ${errorWords.includes(w.id) ? 'bg-rose-500 text-white opacity-30 pointer-events-none' : ''} ${cleanedWords.includes(w.id) ? 'opacity-10 grayscale pointer-events-none scale-90' : ''} ${highlightedWords.includes(w.id) && !foundWords.includes(w.id) ? 'ring-2 md:ring-4 ring-yellow-400 animate-pulse' : ''} ${!foundWords.includes(w.id) && !errorWords.includes(w.id) && !cleanedWords.includes(w.id) ? (showKonamiEffect ? 'hover:text-cyan-400' : 'hover:bg-indigo-50 hover:text-indigo-600') : ''}`}>{w.text}</span>
                 ))}
               </div>
             </div>
@@ -516,14 +515,14 @@ const App: React.FC = () => {
               ].map((p) => (
                 <button 
                   key={p.type} onClick={() => usePowerup(p.type as any)} disabled={p.count <= 0} 
-                  className={`powerup-btn w-10 h-10 md:w-20 md:h-20 flex flex-col items-center justify-center rounded-xl md:rounded-2xl shadow-lg border-b-2 transition-all active:scale-95 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500`) : 'opacity-40 grayscale pointer-events-none'}`}
+                  className={`powerup-btn w-10 h-10 md:w-16 md:h-16 flex flex-col items-center justify-center rounded-xl shadow-lg border-b-2 transition-all active:scale-95 ${p.count > 0 ? (showKonamiEffect ? `bg-${p.color}-600 border-${p.color}-800` : `bg-${p.color}-300 border-${p.color}-500`) : 'opacity-40 grayscale pointer-events-none'}`}
                 >
-                  <i className={`fas ${p.icon} text-xs md:text-2xl mb-0.5`}></i>
+                  <i className={`fas ${p.icon} text-xs md:text-xl mb-0.5`}></i>
                   <span className="text-[6px] md:text-[8px] font-black">{p.label} ({p.count})</span>
                 </button>
               ))}
-              <button onClick={() => setView(GameView.MENU)} className="powerup-btn w-10 h-10 md:w-20 md:h-20 flex flex-col items-center justify-center rounded-xl md:rounded-2xl shadow-lg border-b-2 bg-white border-slate-300">
-                <i className="fas fa-home text-xs md:text-2xl text-indigo-400 mb-0.5"></i>
+              <button onClick={() => setView(GameView.MENU)} className="powerup-btn w-10 h-10 md:w-16 md:h-16 flex flex-col items-center justify-center rounded-xl shadow-lg border-b-2 bg-white border-slate-300">
+                <i className="fas fa-home text-xs md:text-xl text-indigo-400 mb-0.5"></i>
                 <span className="text-[6px] md:text-[8px] font-black uppercase">MENU</span>
               </button>
             </div>

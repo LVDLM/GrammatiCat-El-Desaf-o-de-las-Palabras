@@ -16,7 +16,6 @@
             overflow: hidden;
             user-select: none;
             transition: background-color 0.8s ease;
-            /* Usamos dvh para asegurar que ocupe todo el espacio real del navegador */
             height: 100dvh;
             width: 100vw;
             margin: 0;
@@ -26,6 +25,8 @@
         #root {
             height: 100dvh;
             width: 100vw;
+            overflow-y: auto; /* Permitir scroll si el contenido excede la pantalla */
+            -webkit-overflow-scrolling: touch;
         }
 
         .konami-active {
@@ -81,20 +82,23 @@
         /* Ajustes de optimización para landscape móvil (poca altura) */
         @media screen and (max-height: 480px) {
             .hud-container {
-                padding: 0.25rem !important;
-                margin-bottom: 0.25rem !important;
+                padding: 0.15rem !important;
+                margin-bottom: 0.15rem !important;
             }
             .powerup-btn {
-                width: 3.5rem !important;
-                height: 3.5rem !important;
+                width: 3rem !important;
+                height: 3rem !important;
             }
             .word-bubble {
-                padding: 0.25rem 0.5rem !important;
-                font-size: 1.25rem !important;
+                padding: 0.15rem 0.4rem !important;
+                font-size: 1.15rem !important;
             }
             .main-title {
-                font-size: 3rem !important;
-                margin-bottom: 1rem !important;
+                font-size: 2.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            .menu-btn-container {
+                height: 6rem !important;
             }
         }
     </style>
@@ -113,10 +117,14 @@
 </head>
 <body>
     <div id="orientation-overlay">
-        <i class="fas fa-redo fa-4x mb-6 animate-bounce"></i>
-        <h2 class="text-3xl font-black italic mb-2 uppercase tracking-tighter">¡Gira tu pantalla!</h2>
-        <p class="text-lg font-bold opacity-80 mb-6">GrammatiCat se disfruta mejor en horizontal.</p>
-        <p class="text-sm opacity-60">Una vez girado, toca en "Pantalla Completa" para jugar mejor.</p>
+        <i class="fas fa-redo fa-3x mb-4 animate-bounce"></i>
+        <h2 class="text-2xl font-black italic mb-1 uppercase tracking-tighter">¡Gira tu pantalla!</h2>
+        <p class="text-base font-bold opacity-80 mb-6">Para una mejor experiencia, usa el móvil en horizontal.</p>
+        
+        <button onclick="document.documentElement.requestFullscreen().catch(() => {});" class="px-8 py-4 bg-yellow-400 text-indigo-900 rounded-2xl font-black text-sm uppercase shadow-2xl flex items-center hover:scale-105 active:scale-95 transition-all">
+            <i class="fas fa-expand mr-2"></i> Activar Pantalla Completa
+        </button>
+        <p class="text-[10px] mt-4 opacity-50 uppercase font-black">Actívalo y luego gira el dispositivo</p>
     </div>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
