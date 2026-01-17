@@ -53,11 +53,6 @@
             animation: float 3s ease-in-out infinite;
         }
 
-        @keyframes loading {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-
         /* Orientación Overlay */
         #orientation-overlay {
             display: none;
@@ -70,7 +65,8 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 2rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
         }
 
         @media screen and (max-width: 900px) and (orientation: portrait) {
@@ -83,22 +79,23 @@
         @media screen and (max-height: 480px) {
             .hud-container {
                 padding: 0.1rem !important;
-                margin-bottom: 0.05rem !important;
+                margin-bottom: 0.1rem !important;
             }
             .powerup-btn {
-                width: 2.8rem !important;
-                height: 2.8rem !important;
+                width: 3.2rem !important;
+                height: 3.2rem !important;
             }
             .word-bubble {
-                padding: 0.25rem 0.6rem !important;
-                font-size: 1.4rem !important; /* Aumentado sustancialmente para legibilidad */
+                padding: 0.3rem 0.8rem !important;
+                font-size: 1.6rem !important; /* Letra bien grande para móvil horizontal */
+                line-height: 1;
             }
             .main-title {
-                font-size: 2.5rem !important;
+                font-size: 3rem !important;
                 margin-bottom: 0.5rem !important;
             }
             .menu-btn-container {
-                height: 5.5rem !important;
+                height: 5rem !important;
             }
         }
     </style>
@@ -117,16 +114,22 @@
 </head>
 <body>
     <div id="orientation-overlay">
-        <i class="fas fa-redo fa-3x mb-4 animate-bounce"></i>
-        <h2 class="text-2xl font-black italic mb-1 uppercase tracking-tighter">¡Gira tu pantalla!</h2>
-        <p class="text-base font-bold opacity-80 mb-6">Para una mejor experiencia, usa el móvil en horizontal.</p>
+        <i class="fas fa-mobile-alt fa-3x mb-4 rotate-90 animate-pulse"></i>
+        <h2 class="text-3xl font-black italic mb-2 uppercase tracking-tighter">¡Gira tu pantalla!</h2>
+        <p class="text-base font-bold opacity-80 mb-6 max-w-xs">GrammatiCat necesita espacio horizontal para que las letras se vean grandes y claras.</p>
         
-        <button onclick="document.documentElement.requestFullscreen().catch(() => {});" class="px-8 py-4 bg-yellow-400 text-indigo-900 rounded-2xl font-black text-sm uppercase shadow-2xl flex items-center hover:scale-105 active:scale-95 transition-all">
-            <i class="fas fa-expand mr-2"></i> Activar Pantalla Completa
+        <button id="overlay-fs-btn" class="px-8 py-5 bg-yellow-400 text-indigo-900 rounded-[2rem] font-black text-sm uppercase shadow-2xl flex items-center hover:scale-105 active:scale-95 transition-all">
+            <i class="fas fa-expand mr-2"></i> Pantalla Completa y Jugar
         </button>
-        <p class="text-[10px] mt-4 opacity-50 uppercase font-black">Actívalo y luego gira el dispositivo</p>
+        <p class="text-[10px] mt-6 opacity-40 uppercase font-black tracking-widest">Actívalo y luego gira el dispositivo</p>
     </div>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
+    <script>
+        // Lógica de ayuda para el botón del overlay (necesita estar fuera de React para el gesto inmediato)
+        document.getElementById('overlay-fs-btn').addEventListener('click', () => {
+            document.documentElement.requestFullscreen().catch(() => {});
+        });
+    </script>
 </body>
 </html>
