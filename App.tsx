@@ -566,7 +566,7 @@ const App: React.FC = () => {
           {tutorialStep !== null && <TutorialSign text={["¡Hola! Aquí verás qué palabra buscas.", "Controla tu tiempo, ¡vuela!", "Pierdes vida si fallas.", "¡Usa tus potenciadores!", "¡Suerte! Toca las palabras correctas."][tutorialStep]} onNext={() => setTutorialStep(tutorialStep < 4 ? tutorialStep + 1 : null)} position={['category', 'time', 'lives', 'items', 'words'][tutorialStep] as any} isMidnight={showKonamiEffect} />}
           
           <div className="hud-container w-full max-w-7xl">
-            <GameHUD state={gameState} target={gameState.targetCategory} />
+            <GameHUD state={gameState} target={gameState.targetCategory} levelTitle={currentLevel.title} />
           </div>
           
           <div className="w-full flex flex-1 flex-col items-stretch justify-center gap-2 md:gap-4 lg:gap-10 overflow-hidden px-2 lg:px-10">
