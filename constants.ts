@@ -174,7 +174,7 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "105-8", text: "barrancas", category: WordClass.SUSTANTIVO },
       { id: "105-9", text: "de", category: WordClass.PREPOSICION },
       { id: "105-9", text: "la", category: WordClass.DETERMINANTE },
-      { id: "105-10", text: "margen.", category: WordClass.SUSTANTIVO },
+      { id: "105-10", text: "margen", category: WordClass.SUSTANTIVO },
       { id: "105-11", text: "derecha.", category: WordClass.ADJETIVO },
       { id: "105-12", text: "Dos", category: WordClass.DETERMINANTE },
       { id: "105-13", text: "bogas", category: WordClass.SUSTANTIVO },
