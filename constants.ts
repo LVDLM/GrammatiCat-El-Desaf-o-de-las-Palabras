@@ -1198,8 +1198,8 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "212-2", text: "las", category: WordClass.DETERMINANTE },
       { id: "212-3", text: "familias", category: WordClass.SUSTANTIVO },
       { id: "212-4", text: "felices", category: WordClass.ADJETIVO },
-      { id: "212-5", text: "se;", category: WordClass.PRONOMBRE },
-      { id: "212-6", text: "se parecen;", category: WordClass.VERBO },
+      { id: "212-5", text: "se", category: WordClass.PRONOMBRE },
+      { id: "212-6", text: "parecen;", category: WordClass.VERBO },
       { id: "212-7", text: "pero", category: WordClass.CONJUNCION },
       { id: "212-8", text: "cada", category: WordClass.DETERMINANTE },
       { id: "212-9", text: "familia", category: WordClass.SUSTANTIVO },
@@ -1340,14 +1340,14 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "217-5", text: "oír", category: WordClass.VERBO },
       { id: "217-6", text: "mi", category: WordClass.DETERMINANTE },
       { id: "217-7", text: "historia,", category: WordClass.SUSTANTIVO },
-      { id: "217-11", text: "Lo", category: WordClass.DETERMINANTE },
-      { id: "217-12", text: "primero", category: WordClass.ADJETIVO },
-      { id: "217-13", text: "que", category: WordClass.PRONOMBRE },
-      { id: "217-14", text: "querrán", category: WordClass.VERBO },
-      { id: "217-15", text: "saber", category: WordClass.VERBO },
-      { id: "217-16", text: "es", category: WordClass.VERBO },
-      { id: "217-17", text: "dónde", category: WordClass.ADVERBIO },
-      { id: "217-18", text: "nací.", category: WordClass.VERBO }
+      { id: "217-8", text: "Lo", category: WordClass.DETERMINANTE },
+      { id: "217-9", text: "primero", category: WordClass.ADJETIVO },
+      { id: "217-10", text: "que", category: WordClass.PRONOMBRE },
+      { id: "217-11", text: "querrán", category: WordClass.VERBO },
+      { id: "217-12", text: "saber", category: WordClass.VERBO },
+      { id: "217-13", text: "es", category: WordClass.VERBO },
+      { id: "217-14", text: "dónde", category: WordClass.ADVERBIO },
+      { id: "217-15", text: "nací.", category: WordClass.VERBO }
     ]
   },
   {
@@ -1413,14 +1413,14 @@ export const LITERARY_UNIVERSAL_LEVELS: Level[] = [
       { id: "220-4", text: "imposible", category: WordClass.ADJETIVO },
       { id: "220-5", text: "dar", category: WordClass.VERBO },
       { id: "220-6", text: "un", category: WordClass.DETERMINANTE },
-      { id: "220-5", text: "paseo.", category: WordClass.SUSTANTIVO },
+      { id: "220-7", text: "paseo.", category: WordClass.SUSTANTIVO },
       { id: "220-8", text: "Habíamos estado", category: WordClass.VERBO },
       { id: "220-9", text: "vagando", category: WordClass.VERBO },
-      { id: "220-11", text: "por", category: WordClass.PREPOSICION },
-      { id: "220-12", text: "los", category: WordClass.DETERMINANTE },
-      { id: "220-13", text: "senderos", category: WordClass.SUSTANTIVO },
-      { id: "220-14", text: "timeout.", category: WordClass.PREPOSICION },
-      { id: "220-15", text: "hojas.", category: WordClass.SUSTANTIVO }
+      { id: "220-10", text: "por", category: WordClass.PREPOSICION },
+      { id: "220-11", text: "los", category: WordClass.DETERMINANTE },
+      { id: "220-12", text: "senderos", category: WordClass.SUSTANTIVO },
+      { id: "220-13", text: "timeout.", category: WordClass.PREPOSICION },
+      { id: "220-14", text: "hojas.", category: WordClass.SUSTANTIVO }
     ]
   }
 ];
