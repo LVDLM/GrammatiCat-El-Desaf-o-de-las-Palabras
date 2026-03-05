@@ -661,8 +661,8 @@ export const LITERARY_ES_LEVELS: Level[] = [
       { id: "121-4", text: "caney.", category: WordClass.SUSTANTIVO },
       { id: "121-5", text: "Venía", category: WordClass.VERBO },
       { id: "121-6", text: "cansado", category: WordClass.ADJETIVO },
-      { id: "121-7", text: "recorrer", category: WordClass.VERBO }
-      { id: "121-8", text: "de", category: WordClass.PREPOSICION },
+      { id: "121-7", text: "de", category: WordClass.PREPOSICION },
+      { id: "121-8", text: "recorrer", category: WordClass.VERBO },
       { id: "121-9", text: "las", category: WordClass.DETERMINANTE },
       { id: "121-10", text: "selvas", category: WordClass.SUSTANTIVO },
       { id: "121-11", text: "infinitas,", category: WordClass.ADJETIVO },
