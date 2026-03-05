@@ -13,20 +13,26 @@
         body {
             font-family: 'Fredoka', sans-serif;
             background: #f0f4f8;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: hidden;
             user-select: none;
             transition: background-color 0.8s ease;
+            height: 100vh;
             height: 100dvh;
             width: 100vw;
             margin: 0;
             padding: 0;
+            touch-action: pan-y;
         }
         
         #root {
+            height: 100vh;
             height: 100dvh;
             width: 100vw;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
 
         .konami-active {
