@@ -11,32 +11,37 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
     }
 
-    function incoming(request) { 
+    function incoming() { 
       return request.resource.data; 
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow read: if true;
     }
 
     // Rules for Leaderboard
     match /leaderboard/{entryId} {
-      allow read, list: if true;
+      allow read: if true;
       allow create: if (
-        incoming(request).name is string && incoming(request).name.size() > 0 && incoming(request).name.size() <= 50 &&
-        incoming(request).score is int && incoming(request).score >= 0 && incoming(request).score <= 1000000 &&
-        incoming(request).created_at is string
+        incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 50 &&
+        incoming().score is number && incoming().score >= 0 && incoming().score <= 10000000 &&
+        incoming().created_at is string
       );
       allow update, delete: if false;
     }
 
     // Rules for Community Levels
     match /levels/{levelId} {
-      allow read, list: if true;
+      allow read: if true;
       allow create: if (
-        incoming(request).id is int &&
-        incoming(request).title is string && incoming(request).title.size() <= 150 &&
-        incoming(request).text is string && incoming(request).text.size() <= 4000 &&
-        incoming(request).words is list && incoming(request).words.size() > 0 &&
-        incoming(request).timeLimit is int && incoming(request).timeLimit >= 10 && incoming(request).timeLimit <= 300 &&
-        incoming(request).categoryGroup is string &&
-        incoming(request).created_at is string
+        incoming().id is number &&
+        incoming().title is string && incoming().title.size() <= 200 &&
+        incoming().text is string && incoming().text.size() <= 5000 &&
+        incoming().words is list && incoming().words.size() > 0 &&
+        incoming().timeLimit is number && incoming().timeLimit >= 10 && incoming().timeLimit <= 600 &&
+        incoming().categoryGroup is string &&
+        incoming().created_at is string
       );
       allow update, delete: if false;
     }

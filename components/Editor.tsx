@@ -2,7 +2,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { WordClass, Level, WordData } from '../types';
 import { analyzeTextWithAI } from '../services/geminiService';
-import { saveLevelLocally } from '../services/supabaseService';
+import { saveLevelLocally, saveLevelOnline } from '../services/firebaseService';
 
 interface Props {
   onSave: (level: Level) => void;
@@ -112,6 +112,7 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
     }
 
     saveLevelLocally(newLevel);
+    saveLevelOnline(newLevel);
     onSave(newLevel);
   };
 

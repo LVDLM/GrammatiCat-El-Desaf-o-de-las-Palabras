@@ -6,7 +6,7 @@ import { GameHUD } from './components/GameHUD';
 import { Editor } from './components/Editor';
 import { AchievementsModal } from './components/AchievementsModal';
 import { Leaderboard } from './components/Leaderboard';
-import { fetchCommunityLevels, saveScore } from './services/supabaseService';
+import { fetchCommunityLevels, saveScore } from './services/firebaseService';
 
 export const getPluralCategory = (cat: WordClass): string => {
   switch (cat) {
@@ -733,6 +733,18 @@ const App: React.FC = () => {
                     ))}
                   </div>
                 </section>
+
+                {/* ATRIBUCIÓN */}
+                <div className="pt-6 border-t border-slate-200/40 text-center text-xs lg:text-base">
+                  <a 
+                    href="https://es.vecteezy.com/vectores-gratis/cat" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-indigo-500 hover:text-indigo-600 hover:underline font-semibold"
+                  >
+                    Cat Vectores por Vecteezy
+                  </a>
+                </div>
 
               </div>
             </div>

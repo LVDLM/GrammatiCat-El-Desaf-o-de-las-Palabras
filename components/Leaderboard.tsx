@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { LeaderboardEntry } from '../types';
-import { fetchLeaderboard } from '../services/supabaseService';
+import { fetchLeaderboard } from '../services/firebaseService';
 
 interface Props {
   onClose: () => void;

@@ -57,9 +57,24 @@
         }
       },
       "required": ["id", "title", "text", "words", "timeLimit", "categoryGroup", "created_at"]
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Prueba de conectividad del cliente con la base de datos",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Estado de la prueba"
+        }
+      }
     }
   },
   "firestore": {
+    "test/{docId}": {
+      "schema": "TestConnection",
+      "description": "Documento para validar la conectividad de la aplicación con Firestore"
+    },
     "leaderboard/{entryId}": {
       "schema": "LeaderboardEntry",
       "description": "Colección de ranking de puntuaciones del juego"

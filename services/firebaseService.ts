@@ -104,8 +104,8 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 export const saveScore = async (entry: LeaderboardEntry) => {
   try {
     const scoreData = {
-      name: entry.name || 'Anónimo',
-      score: entry.score,
+      name: (entry.name || 'Anónimo').trim().slice(0, 50) || 'Anónimo',
+      score: Math.round(Number(entry.score) || 0),
       created_at: entry.created_at || new Date().toISOString()
     };
     await addDoc(collection(db, 'leaderboard'), scoreData);
@@ -125,7 +125,7 @@ export const saveScore = async (entry: LeaderboardEntry) => {
 
 export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
   try {
-    const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(15));
+    const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(20));
     const snap = await getDocs(q);
     const results: LeaderboardEntry[] = [];
     snap.forEach((doc) => {
@@ -137,7 +137,10 @@ export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
         created_at: data.created_at
       });
     });
-    return results;
+    if (results.length > 0) {
+      return results;
+    }
+    return getLocalLeaderboard();
   } catch (error) {
     try {
       handleFirestoreError(error, OperationType.LIST, 'leaderboard');
