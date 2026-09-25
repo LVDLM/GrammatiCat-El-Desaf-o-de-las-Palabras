@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Una entrada en el ranking global de puntuaciones",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nombre del jugador"
+        },
+        "score": {
+          "type": "integer",
+          "description": "Puntuación obtenida por el jugador"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora de creación del registro"
+        }
+      },
+      "required": ["name", "score", "created_at"]
+    },
+    "CommunityLevel": {
+      "title": "CommunityLevel",
+      "description": "Un nivel personalizado creado por la comunidad",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID numérico único del nivel"
+        },
+        "title": {
+          "type": "string",
+          "description": "Título de la obra literaria o fragmento"
+        },
+        "text": {
+          "type": "string",
+          "description": "El texto del fragmento literario completo"
+        },
+        "words": {
+          "type": "array",
+          "description": "Lista de objetos que detallan cada palabra y su categoría gramatical"
+        },
+        "timeLimit": {
+          "type": "integer",
+          "description": "Límite de tiempo en segundos para completar el nivel"
+        },
+        "categoryGroup": {
+          "type": "string",
+          "description": "El grupo de categoría del nivel (ej. 'Tus Niveles')"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora de creación del nivel"
+        }
+      },
+      "required": ["id", "title", "text", "words", "timeLimit", "categoryGroup", "created_at"]
+    }
+  },
+  "firestore": {
+    "leaderboard/{entryId}": {
+      "schema": "LeaderboardEntry",
+      "description": "Colección de ranking de puntuaciones del juego"
+    },
+    "levels/{levelId}": {
+      "schema": "CommunityLevel",
+      "description": "Colección de niveles personalizados creados por docentes/alumnos"
+    }
+  }
+}

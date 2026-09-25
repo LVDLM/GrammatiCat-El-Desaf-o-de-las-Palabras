@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    function incoming(request) { 
+      return request.resource.data; 
+    }
+
+    // Rules for Leaderboard
+    match /leaderboard/{entryId} {
+      allow read, list: if true;
+      allow create: if (
+        incoming(request).name is string && incoming(request).name.size() > 0 && incoming(request).name.size() <= 50 &&
+        incoming(request).score is int && incoming(request).score >= 0 && incoming(request).score <= 1000000 &&
+        incoming(request).created_at is string
+      );
+      allow update, delete: if false;
+    }
+
+    // Rules for Community Levels
+    match /levels/{levelId} {
+      allow read, list: if true;
+      allow create: if (
+        incoming(request).id is int &&
+        incoming(request).title is string && incoming(request).title.size() <= 150 &&
+        incoming(request).text is string && incoming(request).text.size() <= 4000 &&
+        incoming(request).words is list && incoming(request).words.size() > 0 &&
+        incoming(request).timeLimit is int && incoming(request).timeLimit >= 10 && incoming(request).timeLimit <= 300 &&
+        incoming(request).categoryGroup is string &&
+        incoming(request).created_at is string
+      );
+      allow update, delete: if false;
+    }
+  }
+}

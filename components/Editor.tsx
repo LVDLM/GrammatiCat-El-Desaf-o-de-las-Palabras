@@ -144,6 +144,16 @@ export const Editor: React.FC<Props> = ({ onSave, onClose }) => {
               <div className="flex justify-between items-center px-2">
                 <span className={`font-black text-sm uppercase tracking-tighter ${isTooLong ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`}>{wordCount} / {MAX_WORDS} PALABRAS</span>
               </div>
+              <div className={`p-4 rounded-xl text-left text-xs border border-dashed flex items-start gap-3 ${
+                isMidnight 
+                  ? 'bg-amber-950/20 border-amber-500/30 text-amber-300' 
+                  : 'bg-amber-50 border-amber-200 text-amber-800'
+              }`}>
+                <i className="fas fa-exclamation-triangle mt-0.5 text-base flex-shrink-0"></i>
+                <p className="leading-relaxed">
+                  <strong>Recordatorio docente:</strong> Asegúrate de añadir el dominio de esta web publicada en tu consola de Firebase (dentro de <strong>Authentication &gt; Authorized Domains</strong>) para habilitar el guardado y la sincronización online de nuevos textos creados por la comunidad desde cualquier dispositivo escolar.
+                </p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <button onClick={handleAISuggestion} disabled={isAnalyzing || !text.trim() || isTooLong} className="py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[1.5rem] font-black disabled:opacity-50 shadow-xl transition-all active:scale-95 flex items-center justify-center text-lg italic tracking-tighter">
                   {isAnalyzing ? <i className="fas fa-spinner fa-spin mr-3"></i> : <i className="fas fa-magic mr-3"></i>}
