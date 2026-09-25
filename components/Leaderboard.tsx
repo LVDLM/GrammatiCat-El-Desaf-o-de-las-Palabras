@@ -76,20 +76,6 @@ export const Leaderboard: React.FC<Props> = ({ onClose, isMidnight }) => {
           )}
         </div>
 
-        <div className={`p-4 mx-6 mb-4 rounded-xl text-left text-xs border-2 flex items-start gap-3 ${
-          isMidnight 
-            ? 'bg-amber-950/20 border-amber-500/30 text-amber-300' 
-            : 'bg-amber-50 border-amber-200 text-amber-800'
-        }`}>
-          <i className="fas fa-exclamation-triangle mt-0.5 text-base flex-shrink-0"></i>
-          <div>
-            <p className="font-bold uppercase tracking-wider mb-0.5">⚠️ Recordatorio de Configuración</p>
-            <p className="opacity-90 leading-relaxed">
-              Recuerda autorizar el dominio de esta web publicada en tu consola de Firebase (dentro de <strong>Authorized Domains / Dominios autorizados</strong> de Authentication o Hosting) y verificar que Firestore tenga conectividad para que el ranking global se actualice correctamente.
-            </p>
-          </div>
-        </div>
-
         <div className={`p-6 text-center italic text-xs ${isMidnight ? 'bg-slate-950 text-slate-500' : 'bg-slate-50 text-slate-400'}`}>
           <i className="fas fa-info-circle mr-2"></i> Las puntuaciones se actualizan en tiempo real
         </div>
