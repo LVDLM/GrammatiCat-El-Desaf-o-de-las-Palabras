@@ -30,5 +30,5 @@ View your app in AI Studio: https://ai.studio/apps/d2116248-5f01-4768-a590-696d8
 
 The **Build Android APK & Google Play AAB** GitHub Actions workflow also builds a
 debug APK and a release AAB on pushes to `main` or `master`, and can be run
-manually. It publishes them as `grammaticat-android-apk` and
-`grammaticat-google-play-aab` workflow artifacts.
+manually. It publishes them as `gramaticat-android-apk` and
+`gramaticat-google-play-aab` workflow artifacts.

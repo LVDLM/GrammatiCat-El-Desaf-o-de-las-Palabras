@@ -51,13 +51,13 @@ jobs:
       - name: Subir APK de prueba como artefacto descargable
         uses: actions/upload-artifact@v4
         with:
-          name: grammaticat-android-apk
+          name: gramaticat-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
       - name: Subir AAB sin firmar (requiere firma para Google Play)
         uses: actions/upload-artifact@v4
         with:
-          name: grammaticat-google-play-aab
+          name: gramaticat-google-play-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 14

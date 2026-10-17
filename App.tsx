@@ -513,7 +513,7 @@ const App: React.FC = () => {
       {view === GameView.MENU && (
         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 w-full max-w-6xl text-center px-4 pb-10">
           <div className="relative mb-6 md:mb-10 lg:mb-16 xl:mb-20 floating">
-            <h1 className="main-title text-5xl sm:text-6xl md:text-7xl lg:text-9xl xl:text-[11rem] font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.4)] tracking-tighter select-none uppercase leading-none">GRAMMA<span className="text-yellow-300">CAT</span></h1>
+            <h1 className="main-title text-5xl sm:text-6xl md:text-7xl lg:text-9xl xl:text-[11rem] font-black text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.4)] tracking-tighter select-none uppercase leading-none">GRAMATI<span className="text-yellow-300">CAT</span></h1>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 md:gap-8 lg:gap-16 w-full justify-center mb-8 lg:mb-16">
@@ -534,7 +534,7 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-3 lg:gap-10 max-w-5xl items-center">
+          <div className="safe-bottom-controls flex flex-wrap justify-center gap-3 lg:gap-10 max-w-5xl items-center">
             <button onClick={() => setView(GameView.LEADERBOARD)} className="px-6 py-4 lg:px-12 lg:py-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-yellow-500 shadow-xl text-xs md:text-sm lg:text-xl flex items-center"><i className="fas fa-list-ol mr-2 lg:mr-4"></i> RÁNKING</button>
             <button onClick={() => setView(GameView.ACHIEVEMENTS)} className="px-6 py-4 lg:px-12 lg:py-6 bg-white/20 hover:bg-white/40 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-white/30 text-xs md:text-sm lg:text-xl shadow-xl backdrop-blur-md flex items-center"><i className="fas fa-trophy mr-2 lg:mr-4"></i> LOGROS</button>
             <button onClick={toggleFullscreen} className="px-6 py-4 lg:px-12 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl lg:rounded-[2.5rem] font-black border-2 lg:border-4 border-indigo-700 text-xs md:text-sm lg:text-xl flex items-center shadow-xl">
@@ -578,7 +578,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div id="powerups-bar" className="flex flex-row gap-2 md:gap-4 lg:gap-10 justify-center items-center py-1 md:py-3 lg:py-6">
+            <div id="powerups-bar" className="safe-bottom-controls flex flex-row gap-2 md:gap-4 lg:gap-10 justify-center items-center py-1 md:py-3 lg:py-6">
               {[ 
                 { type: 'hint' as const, icon: 'fa-lightbulb', label: 'PISTA', count: gameState.powerups.hints, color: 'cyan' }, 
                 { type: 'clean' as const, icon: 'fa-broom', label: 'LIMPIAR', count: gameState.powerups.cleaners, color: 'rose' }, 
@@ -615,19 +615,19 @@ const App: React.FC = () => {
       )}
 
       {view === GameView.GAME_OVER && (
-        <div className={`flex flex-col items-center justify-center w-full h-[100dvh] p-2 md:p-4 transition-all duration-300`}>
-          <div className={`text-center p-4 md:p-6 lg:p-12 rounded-[2rem] lg:rounded-[4rem] shadow-2xl border-b-4 lg:border-b-8 border-rose-500 animate-in zoom-in w-full max-w-lg lg:max-w-6xl flex flex-col ${showKonamiEffect ? 'bg-slate-900 text-white' : 'bg-white'}`}>
+        <div className="game-over-screen flex flex-col items-center justify-center w-full min-h-[100dvh] p-2 md:p-4 transition-all duration-300">
+          <div className={`game-over-card text-center p-4 md:p-6 lg:p-12 rounded-[2rem] lg:rounded-[4rem] shadow-2xl border-b-4 lg:border-b-8 border-rose-500 animate-in zoom-in w-full max-w-lg lg:max-w-6xl flex flex-col ${showKonamiEffect ? 'bg-slate-900 text-white' : 'bg-white'}`}>
             
-            <div className="mb-2 md:mb-4 lg:mb-8">
-               <i className="fas fa-skull text-3xl md:text-5xl lg:text-7xl text-rose-500 mb-1 lg:mb-4 block drop-shadow-lg animate-bounce"></i>
-               <h2 className="text-2xl md:text-4xl lg:text-6xl font-black italic uppercase tracking-tighter leading-none">FIN DEL JUEGO</h2>
+            <div className="game-over-header mb-2 md:mb-4 lg:mb-8">
+               <i className="game-over-icon fas fa-skull text-3xl md:text-5xl lg:text-7xl text-rose-500 mb-1 lg:mb-4 block drop-shadow-lg animate-bounce"></i>
+               <h2 className="game-over-title text-2xl md:text-4xl lg:text-6xl font-black italic uppercase tracking-tighter leading-none">FIN DEL JUEGO</h2>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 md:gap-4 lg:gap-8 items-stretch flex-1">
+            <div className="game-over-grid grid grid-cols-2 gap-2 md:gap-4 lg:gap-8 items-stretch flex-1">
               {/* SCORE BOX */}
-              <div className="p-3 md:p-6 lg:p-10 bg-indigo-50 rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] border-2 lg:border-4 border-indigo-100 shadow-inner flex flex-col justify-center items-center">
+              <div className="game-over-score-box p-3 md:p-6 lg:p-10 bg-indigo-50 rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] border-2 lg:border-4 border-indigo-100 shadow-inner flex flex-col justify-center items-center">
                 <span className="text-[10px] md:text-xs lg:text-xl font-bold text-slate-400 block uppercase tracking-[0.2em] mb-1">PUNTOS</span>
-                <span className="text-3xl md:text-5xl lg:text-8xl font-black text-indigo-600 mb-2 leading-none">{gameState.score}</span>
+                <span className="game-over-score text-3xl md:text-5xl lg:text-8xl font-black text-indigo-600 mb-2 leading-none">{gameState.score}</span>
                 
                 {gameState.score > 0 && !scoreSaved && (
                   <div className="flex flex-col gap-1.5 md:gap-3 w-full max-w-[280px]">
@@ -639,7 +639,7 @@ const App: React.FC = () => {
               </div>
 
               {/* MISSED WORDS BOX */}
-              <div className={`p-3 md:p-6 lg:p-10 rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] border-2 lg:border-4 flex flex-col transition-all overflow-hidden ${missedWords.length > 0 ? (showKonamiEffect ? 'bg-indigo-950/20 border-indigo-900' : 'bg-indigo-50 border-indigo-100') : 'bg-emerald-50 border-emerald-100'}`}>
+              <div className={`game-over-words-box p-3 md:p-6 lg:p-10 rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] border-2 lg:border-4 flex flex-col transition-all overflow-hidden ${missedWords.length > 0 ? (showKonamiEffect ? 'bg-indigo-950/20 border-indigo-900' : 'bg-indigo-50 border-indigo-100') : 'bg-emerald-50 border-emerald-100'}`}>
                 <h3 className="text-[9px] md:text-xs lg:text-2xl font-black text-indigo-400 uppercase tracking-wider mb-2 lg:mb-6">
                   {missedWords.length > 0 ? missedWordsHeader : '¡PERFECTO!'}
                 </h3>
@@ -661,7 +661,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <button onClick={() => setView(GameView.MENU)} className="w-full mt-3 md:mt-4 lg:mt-10 py-3 md:py-4 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl md:rounded-2xl lg:rounded-[2.5rem] text-sm md:text-xl lg:text-3xl font-black uppercase italic tracking-tighter shadow-xl transition-all active:scale-95">MENÚ PRINCIPAL</button>
+            <button onClick={() => setView(GameView.MENU)} className="game-over-continue w-full mt-3 md:mt-4 lg:mt-10 py-3 md:py-4 lg:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl md:rounded-2xl lg:rounded-[2.5rem] text-sm md:text-xl lg:text-3xl font-black uppercase italic tracking-tighter shadow-xl transition-all active:scale-95">MENÚ PRINCIPAL</button>
           </div>
         </div>
       )}
@@ -673,7 +673,7 @@ const App: React.FC = () => {
               <div className="absolute top-0 right-0 p-10 opacity-10 rotate-12 scale-150"><i className="fas fa-book-open text-9xl"></i></div>
               <div className="relative z-10">
                 <h2 className="text-4xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none">SOBRE EL JUEGO</h2>
-                <p className="text-indigo-200 font-bold text-lg lg:text-2xl mt-2 italic">GrammatiCat: Pedagogía y Diversión</p>
+                <p className="text-indigo-200 font-bold text-lg lg:text-2xl mt-2 italic">GramatiCat: Pedagogía y Diversión</p>
               </div>
               <button onClick={() => setView(GameView.MENU)} className="bg-white/20 hover:bg-white/40 w-12 h-12 lg:w-20 lg:h-20 rounded-full transition-colors flex items-center justify-center relative z-10">
                 <i className="fas fa-times text-2xl lg:text-5xl"></i>

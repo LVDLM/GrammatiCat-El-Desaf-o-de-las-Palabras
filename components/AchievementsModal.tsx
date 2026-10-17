@@ -14,7 +14,7 @@ export const AchievementsModal: React.FC<Props> = ({ achievements, onClose }) =>
         <div className="p-8 lg:p-12 bg-indigo-600 text-white flex justify-between items-center">
           <div>
             <h2 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase">Sala de Trofeos</h2>
-            <p className="text-indigo-200 font-bold text-lg lg:text-2xl italic">Tus hitos en GrammatiCat</p>
+            <p className="text-indigo-200 font-bold text-lg lg:text-2xl italic">Tus hitos en GramatiCat</p>
           </div>
           <button onClick={onClose} className="bg-white/20 hover:bg-white/40 w-12 h-12 lg:w-16 lg:h-16 rounded-full transition-colors flex items-center justify-center">
             <i className="fas fa-times text-2xl lg:text-4xl"></i>

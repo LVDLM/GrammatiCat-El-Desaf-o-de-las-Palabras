@@ -3,7 +3,7 @@ import { WordClass, Level, Achievement } from './types';
 export const INITIAL_LEVELS: Level[] = [
   {
     id: 1,
-    title: "Bienvenido a GrammatiCat",
+    title: "Bienvenido a GramatiCat",
     categoryGroup: 'Tutorial',
     text: "El gato negro corre rápido por el bosque verde.",
     targetCategory: WordClass.SUSTANTIVO,
