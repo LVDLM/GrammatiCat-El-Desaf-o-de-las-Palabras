@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GrammatiCat</string>
+    <string name="title_activity_main">GrammatiCat</string>
+    <string name="package_name">com.grammaticat.app</string>
+    <string name="custom_url_scheme">com.grammaticat.app</string>
+</resources>
